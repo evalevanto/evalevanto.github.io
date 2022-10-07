@@ -1,7 +1,7 @@
 <!doctype html><html lang=en-us><head><title>MicroCorruption: Whitehorse | The Mess Of Nebula</title><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge,chrome=1"><meta name=viewport content="width=device-width,minimum-scale=1"><meta name=description content="Whitehorse Writeup 🔗 Haaay! &mldr; Neigh? 🔗Slaps you with a manual:
 This lock is attached to a HSM-2 module. Function to unlock door no longer in the lock firmware. The main function just calls login. You set a breakpoint at login and a quick test input of aaaaaaaaaaaaaaaa
 The login function:
-The prompt gives a range for input to be between 8 to 16 characters. However, the parameters for the getsn function: r14: Holds the length of the input buffer."><meta name=generator content="Hugo 0.103.0"><meta name=ROBOTS content="NOINDEX, NOFOLLOW"><link rel=stylesheet href=/css/style.css><link rel="shortcut icon" href=/images/favicon.ico type=image/x-icon></head><body><nav class=navigation><a href=/><span class=arrow>←</span>Home</a>
+The prompt gives a range for input to be between 8 to 16 characters. However, the parameters for the getsn function: r14: Holds the length of the input buffer."><meta name=generator content="Hugo 0.104.3"><meta name=ROBOTS content="NOINDEX, NOFOLLOW"><link rel=stylesheet href=/css/style.css><link rel="shortcut icon" href=/images/favicon.ico type=image/x-icon></head><body><nav class=navigation><a href=/><span class=arrow>←</span>Home</a>
 <a href=/posts>Archive</a>
 <a href=/tags>Tags</a>
 <a href=/about>About</a></nav><main class=main><section id=single><h1 class=title>MicroCorruption: Whitehorse</h1><div class=tip><time datetime="2020-09-01 00:00:00 +0000 UTC">Sep 1, 2020</time>
