@@ -1,0 +1,93 @@
+<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.113.0"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light dark"><meta name=supported-color-schemes content="light dark"><title>Snappy on Travis&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=stylesheet href=/css/core.min.3dff9636f60da21a7bce297e09d08d8f636d1b8e7def5079c790207b0c0dfdc945858b105a0c7fc6c4a0b4f9ae05e8d3.css integrity=sha384-Pf+WNvYNohp7zil+CdCNj2NtG45971B5x5AgewwN/clFhYsQWgx/xsSgtPmuBejT><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/categories/>Categories</a><a class=site-tag href=/tags/>Tags</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>Snappy on Travis</h1><p class=article-date>2021-05-22</p></section><article class=markdown-body><p><a target=_blank rel="noopener noreferrer" href=/images/snap.jpg><img class=img src=/images/snap.jpg alt></a></p><p><a href=https://step.esa.int/main/ target=_blank>SNAP</a> is a platform for <strong>processing and analysis</strong> of Earth Observation products. It exposes an interface (<code>SNAP-Python</code>) that enables using the platform in python projects.</p><p>This article steps through the process of installing SNAP and configuring a python environment to use <code>SNAP-Python</code>.</p><hr><blockquote><p>Travis dist used: <code>bionic</code>. python version <code>3.9</code></p><p>This workflow has been tested on multiple linux distros. No thorough test has been done on other *nix</p></blockquote><h3 id=prerequisites>Prerequisites</h3><p>This process requires some dependencies. Have a script that installs the following:</p><ul><li><a href=https://openjdk.java.net/ target=_blank><strong>Java</strong></a></li><li><a href=https://maven.apache.org/download.cgi target=_blank><strong>Maven</strong></a></li></ul><blockquote><p>SNAP installation works on java version >= 8</p></blockquote><pre tabindex=0><code>#! /bin/bash
+
+# This script handles the download and installation of Apache Maven required to successfully build SNAP components.
+
+set -e
+
+echo &#34;----- MVN INSTALLATION -----&#34;
+
+JDK_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+echo &#34;export JAVA_HOME=$JDK_HOME&#34; &gt;&gt; $TRAVIS_HOME/.profile
+echo &#34;export PATH=$JAVA_HOME/bin:$PATH&#34; &gt;&gt; $TRAVIS_HOME/.profile
+source $TRAVIS_HOME/.profile
+echo &#34;----- java version: $(java -version) -----&#34;
+echo &#34;----- Updated env vars: JAVA_HOME=$(echo $JAVA_HOME) -----&#34;
+
+# Install maven 3.8.1
+echo &#34;----- downloading and extracting Apache Maven -----&#34;
+
+MAVEN_HOME=/opt/apache-maven-3.8.1
+if [ -z $MAVEN_HOME ]; # /opt/apache-maven-3.8.1
+then
+    echo &#34;----- downloading and extracting Apache Maven to /opt -----&#34;
+    url=https://downloads.apache.org/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz
+    wget $url -O - | tar -xzf - -C /opt
+fi
+
+echo &#34;export M2_HOME=$MAVEN_HOME&#34; &gt;&gt; $TRAVIS_HOME/.profile
+echo &#34;export PATH=&#34;$MAVEN_HOME/bin:$PATH&#34;&#34; &gt;&gt; $TRAVIS_HOME/.profile
+source $TRAVIS_HOME/.profile
+
+echo &#34;----- mvn version: $(mvn -v) -----&#34;
+echo &#34;----- update env vars: M2_HOME=$(echo $M2_HOME) -----&#34;
+</code></pre><hr><h3 id=snap-installation>SNAP installation</h3><p>Download and run the <code>snap installer</code>. Using the -q flag on the installer runs it without the graphical interface.</p><blockquote><p>It is a good idea to cache the installer due to its large size.</p><p>SNAP installation directory is <code>/opt/snap</code> in this case. Usually in <code>~/snap</code></p></blockquote><pre tabindex=0><code># check if snap is installed
+if [ ! -f /opt/snap/VERSION.txt ];
+then
+    echo &#34;----- SNAP INSTALLATION -----&#34;
+
+    if [ -z &#34;$(find $TRAVIS_HOME/installer -name &#39;*.sh&#39; | head -1)&#34; ];
+    then
+        echo &#34;-----  Download SNAP installer -----&#34;
+        mkdir $TRAVIS_HOME/installer &amp;&amp; cd $TRAVIS_HOME/installer
+        wget https://download.esa.int/step/snap/8.0/installers/esa-snap_sentinel_unix_8_0.sh
+    fi
+
+    echo &#34;----- Install SNAP with gpt -----&#34;
+    cd $TRAVIS_HOME/installer &amp;&amp; chmod +x esa-snap_sentinel_unix_8_0.sh
+    ./esa-snap_sentinel_unix_8_0.sh -q
+
+    echo &#34;----- Successful SNAP installation -----&#34;
+fi
+</code></pre><hr><h3 id=snap-python-configuration>SNAP-Python configuration</h3><p>Building SNAP-Python (called <code>snappy</code>) requires <code>jpy</code>. <a href=https://github.com/bcdev/jpy target=_blank>jpy</a> is a java-python bridge.</p><blockquote><p>NOTE: If you set up the JAVA env variables fine and did source ~/.profile, this should work fine.</p></blockquote><pre tabindex=0><code>
+if [ ! -f $TRAVIS_HOME/.snap/snap-python/snappy/jpyconfig.properties ];
+then
+    echo &#34;----- JPY INSTALLATION -----&#34;
+
+    cd $TRAVIS_HOME &amp;&amp; git clone https://github.com/bcdev/jpy.git
+    cd jpy &amp;&amp; python3.9 setup.py build maven bdist_wheel install
+</code></pre><p>The wheel generated should be copied to snap-python <code>snappy</code> folder and set the python executable for snap.</p><pre tabindex=0><code>  echo &#34;----- CONFIGURING SNAP-PYTHON -----&#34;
+
+    if [ ! -d $TRAVIS_HOME/.snap/snap-python/snappy ]; 
+    then
+        mkdir -p $TRAVIS_HOME/.snap/snap-python/snappy
+    fi
+
+    echo &#34;----- Copying jpy to snappy -----&#34;
+    cp dist/*.whl $TRAVIS_HOME/.snap/snap-python/snappy &amp;&amp; rm -rf jpy
+
+    if [ -d $TRAVIS_HOME/snap ];
+    then
+    ls -la $TRAVIS_HOME/snap
+    fi
+
+    # Add to env vars
+    export PATH=/opt/snap/bin:$PATH
+    # Configure python interpreter
+    /opt/snap/bin/snap --nogui --nosplash --python $(which python3.9)
+fi
+</code></pre><p>After this, simply install snappy with your python executale to be able to simply <code>import snappy</code></p><pre tabindex=0><code>cd $TRAVIS_HOME/.snap/snap-python/snappy &amp;&amp; python3.9 setup.py install 
+
+echo &#34;----- Installation and configuration success! -----&#34;
+</code></pre><p>Remember to cache <code>snap</code> and generated folder <code>.snap</code> and/or the installer</p><pre tabindex=0><code>before_install:
+  # Install SNAP
+  - . ./travis_scripts/java_mvn_install.sh
+  - . ./travis_scripts/snap_install.sh
+  
+...
+
+cache:
+  directories:
+    - $TRAVIS_HOME/.snap
+    - /opt/snap
+  
+</code></pre><p>Happy coding!! :)</p></article><section class=article-labels><a class="article-category li" href=/categories/ci/cd/><span class=hashtag>#</span>CI/CD</a><a class="article-category li" href=/categories/computer-vision/><span class=hashtag>#</span>Computer Vision</a><a class="article-tag li" href=/tags/snappy/><span class=hashtag>#</span>snappy</a><a class="article-tag li" href=/tags/travis/><span class=hashtag>#</span>travis</a></section><section class=article-navigation><p><a class=link href=/posts/pragmatic-programmer/><span class=li></span>A review: The Pragmatic Programmer</a></p><p><a class=link href=/posts/microcorruption-jakarta/><span class=li></span>MicroCorruption: Jakarta</a class="link"></p></section><section class=article-discussion><div id=disqus_thread></div><script type=application/javascript>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//the-mess-of-nebula.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></section></div><section id=footer class="footer max-body-width"><p>© 2023 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script><script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","your-google-analytics-id","auto"),ga("send","pageview"))</script><script async src=https://www.google-analytics.com/analytics.js></script></div></body></html>
