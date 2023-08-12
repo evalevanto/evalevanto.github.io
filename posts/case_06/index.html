@@ -1,0 +1,128 @@
+<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.117.0"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light dark"><meta name=supported-color-schemes content="light dark"><title>Case 06 → Something fishy 🎣&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=stylesheet href=/css/core.min.3dff9636f60da21a7bce297e09d08d8f636d1b8e7def5079c790207b0c0dfdc945858b105a0c7fc6c4a0b4f9ae05e8d3.css integrity=sha384-Pf+WNvYNohp7zil+CdCNj2NtG45971B5x5AgewwN/clFhYsQWgx/xsSgtPmuBejT><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/categories/>Categories</a><a class=site-tag href=/tags/>Tags</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>Case 06 → Something fishy 🎣</h1><p class=article-date>2023-08-12</p></section><article class=markdown-body><p><strong>Background: Kuanda has been recruiting cyber-crime specialists and every new member has to spend a week at the National Gallery of Art.</strong></p><p><strong>Mission: If you can decode the instructions, you might just have a shot at infiltrating their system and finding out what they&rsquo;re really up to.</strong></p><p><strong>For all the marbles: Who is the leader of Kuanda.org?</strong></p><hr><p>It’s Sherlock Holmes up in this.</p><p>We receive a decoded text that new recruiters receive:</p><pre tabindex=0><code class=language-markup data-lang=markup>12204/497 62295/24 50883/678 47108/107 193867/3,
+45534/141 hidden 100922/183 143461/1 1181/505 46187/380.
+41526/155 66447/199 30241/114, 33745/154 12145/387 46437/398 177191/131:
+293/64 41629/1506 210038/432, 41612/803 216839/1.
+
+404/258 rules 40/186 1472/222 122894/2 46081/105:
+41594/650 32579/439 44625/141 184121/19 33254/348 357/273 32589/821,
+46171/687 punctuations 62420/10 50509/48 1447/128,
+176565/82&#39;56721/591 561/225 insensitive, 30744/129 76197/32.
+
+1319/42 41599/216 68/457 136016/146, 42420/126&#39;46198/389 42429/158 40091/108 41667/252,
+1515/555 177593/223 176924/73 45889/65 159836/96 35080/384 32578/199.
+1607/167 124996/9 71/56, 1303/187 45640/1114 72328/247 75802/11,
+1168/146 163380/12 57541/116 206122/738 365/267 46026/211 46127/19.
+
+119295/425 45062/128 12198/133 163917/238 45092/8 54183/4 42453/82:
+561/433 9/387 37004/287 1493/118 41676/38 163917/238 3159/118 63264/687
+1/905 1493/109 43723/252, 136355/1 1159/134 40062/172 32588/604,
+158574/1 45411/8 10/892 127587/175 - 633/9 72328/247 1514/615 42940/138.
+
+164958/84 221014/479 151526/7 111124/138, 41668/206 34109/46 1514/555,
+147789/2 3228/152 993/323 166477/167 178042/167, 50753/91&#39;207786/8 12/372.
+1108/158&#39;42423/150 12/309 66154/9 213566/11 44981/158 1197/300
+40184/149 92994/63-71071/179 75093/7 211718/18 74211/5 46144/399.
+</code></pre><p>We also know that new recruiters spend time at the National Gallery of art.</p><p>There is probably clues in the paintings.</p><p>Let’s inspect the digital repository structure!</p><pre tabindex=0><code class=language-markup data-lang=markup>NationalGalleryArt
+| take 5
+</code></pre><p>The key seems to be, the nth word from the provenance text of the xth object where x/n.</p><p>Let’s create a search index of objectId to word.</p><pre tabindex=0><code class=language-markup data-lang=markup>NationalGalleryArt
+| project ObjectId, word = extract_all(@&#39;(\w+)&#39;, ProvenanceText)
+| mv-expand with_itemindex=index word
+| extend ObjectId = strcat(tostring(ObjectId), &#39;/&#39;, index)
+| project-away index
+| take 5
+</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/06_1.png><img class=img src=/images/kusto/06_1.png alt=Untitled></a></p><p>We store the code to a datatable and extact the code words</p><pre tabindex=0><code class=language-markup data-lang=markup>Code 
+| extend codeword = extract_all(@&#39;(\d+/\d+)&#39;, code)
+| mv-expand codeword
+| project ObjectId = tostring(codeword)
+</code></pre><p>We then decode the codewords</p><pre tabindex=0><code class=language-markup data-lang=markup>Code 
+| extend codeword = extract_all(@&#39;(\d+/\d+)&#39;, code)
+| mv-expand codeword
+| project ObjectId = tostring(codeword)
+| join kind=inner(NationalGalleryArt
+    | project ObjectId, word = extract_all(@&#39;(?m)(\w+)&#39;, ProvenanceText)
+    | mv-expand with_itemindex=index word
+    | extend ObjectId = strcat(ObjectId, &#39;/&#39;, index)
+    | project-away index)
+    on ObjectId
+| project ObjectId, word
+</code></pre><p>Now we need to replace the codes with the decoded words</p><pre tabindex=0><code class=language-markup data-lang=markup>Code 
+| extend ObjectId = extract_all(@&#39;(\d+/\d+)&#39;, code)
+| mv-expand ObjectId to typeof(string)
+| join kind=inner(NationalGalleryArt
+    | project ObjectId, word = extract_all(@&#39;(?m)(\w+)&#39;, ProvenanceText)
+    | mv-expand with_itemindex=index word
+    | extend ObjectId = strcat(ObjectId, &#39;/&#39;, index)
+    | project-away index)
+    on ObjectId
+| project ObjectId, word, code
+| summarize Object_Id = make_list(ObjectId), word = make_list(word) by code
+| project code = replace_strings(code, Object_Id, word)
+</code></pre><blockquote><p>in catalogue of titles Grand,
+three hidden words Demand your Hand.
+when found all, they form A line:
+A clear timeline, simply Fine.</p></blockquote><blockquote><p>words rules are simple to Review:
+at least three Letters have in view,
+all punctuations Mark the End,
+they&rsquo;re case insensitive, my friend.</p></blockquote><blockquote><p>to find all words, you&rsquo;ll need some skill,
+seeking the popular will guide you still.
+below The King, the first word mounts,
+the Second shares with Third their counts.</p></blockquote><blockquote><p>reveal the last word with Wise thought:
+take first two letters from word most sought
+into marked dozen, and change just one,
+and with those two - the word is done.</p></blockquote><blockquote><p>so search the titles, high and low,
+and when you find it, you&rsquo;ll know.
+you&rsquo;ve picked the Image that revealed
+the pass-code to the World concealed.</p></blockquote><p>We need to crack what this means:</p><ul><li>We are looking for three words.</li><li>They are case insensitive</li><li>The first word is below the King</li><li>The second word shares the same count with the third</li><li>For the third word, first two letters from the most popular word</li></ul><p>We do a word count of the titles</p><pre tabindex=0><code class=language-markup data-lang=markup>NationalGalleryArt
+| extend found = extract_all(@&#39;(\w{3,})&#39;, Title)
+| mv-expand found to typeof(string)
+| summarize count() by tolower(found)
+| order by count_ desc
+| extend rn = row_number()
+</code></pre><p>The first word:</p><pre tabindex=0><code class=language-markup data-lang=markup>NationalGalleryArt
+| extend found = extract_all(@&#39;(\w{3,})&#39;, Title)
+| mv-expand found to typeof(string)
+| summarize count() by tolower(found)
+| order by count_ desc
+| extend rn = row_number()
+| serialize next=next(Column1) 
+| where Column1==&#34;king&#34;
+</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/06_2.png><img class=img src=/images/kusto/06_2.png alt=Untitled></a></p><p>The second word:</p><pre tabindex=0><code class=language-markup data-lang=markup>NationalGalleryArt
+| extend found = extract_all(@&#39;(\w{3,})&#39;, Title)
+| mv-expand found to typeof(string)
+| summarize count() by tolower(found)
+| order by count_ desc
+| extend rn = row_number()
+| where count_ == &#39;161&#39;
+</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/06_3.png><img class=img src=/images/kusto/06_3.png alt=Untitled></a></p><p>The third word:</p><pre tabindex=0><code class=language-markup data-lang=markup>reveal the last word with Wise thought:
+take first two letters from word most sought
+into marked dozen, and change just one,
+and with those two - the word is done.
+</code></pre><p>The first ranked word == ‘the’ and the twelfth word == ‘man’. When we put them together, we get</p><p>MANTH ~ MONTH</p><p>Words: day year month</p><blockquote><p>so search the titles, high and low,
+and when you find it, you&rsquo;ll know.
+you&rsquo;ve picked the Image that revealed
+the pass-code to the World concealed.</p></blockquote><pre tabindex=0><code class=language-markup data-lang=markup>NationalGalleryArt
+| where tolower(Title) contains &#34;day&#34; and tolower(Title) contains &#34;month&#34; and tolower(Title) contains &#34;year&#34;
+</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/06_4.png><img class=img src=/images/kusto/06_4.png alt=Untitled></a></p><p>Inspecting the scripts within the website. Found LoginPage.tsx.</p><pre tabindex=0><code class=language-markup data-lang=markup>const {debouncesHintUrl, setHintError} = React.useMemo(() =&gt; { 
+    const tools=  {
+    setHintError: function () {
+        setShowError({
+          onHint: true,
+          errorMessage: &#34;Error: invalid link-hint&#34;
+        });
+        setValidHintUrl(false);
+      },
+      debouncesHintUrl: debounce((url: string) =&gt; {
+        if (!url) {
+          return;
+        }
+        if (!url.match(/^https:\/\/api\.nga\.gov.*default.jpg$/)) {
+          tools.setHintError();
+          return;
+        }
+        setHintUrl(url);
+      }, 300),
+
+    };
+    return tools;
+  }, []);
+</code></pre><p>The login hint is the URL to the image!</p><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/06_5.png><img class=img src=/images/kusto/06_5.png alt=Untitled></a></p><p>KOTSPUOST</p><p>Follow the octopus for the password</p><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/06_6.png><img class=img src=/images/kusto/06_6.png alt=Untitled></a></p></article><section class=article-labels><a class="article-category li" href=/categories/kusto-detective-agency/><span class=hashtag>#</span>Kusto Detective Agency</a><a class="article-tag li" href=/tags/kql/><span class=hashtag>#</span>kql</a></section><section class=article-navigation><p><a class=link href=/posts/case_05/><span class=li></span>Case 05 → Devils and details 🪵</a></p><p><a class=link href=/posts/towards-oscp/><span class=li></span>Towards OSCP</a class="link"></p></section><section class=article-discussion><div id=disqus_thread></div><script type=application/javascript>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//the-mess-of-nebula.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></section></div><section id=footer class="footer max-body-width"><p>© 2023 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script><script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","your-google-analytics-id","auto"),ga("send","pageview"))</script><script async src=https://www.google-analytics.com/analytics.js></script></div></body></html>

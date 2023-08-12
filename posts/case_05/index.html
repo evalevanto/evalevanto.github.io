@@ -1,0 +1,45 @@
+<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.117.0"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light dark"><meta name=supported-color-schemes content="light dark"><title>Case 05 → Devils and details 🪵&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=stylesheet href=/css/core.min.3dff9636f60da21a7bce297e09d08d8f636d1b8e7def5079c790207b0c0dfdc945858b105a0c7fc6c4a0b4f9ae05e8d3.css integrity=sha384-Pf+WNvYNohp7zil+CdCNj2NtG45971B5x5AgewwN/clFhYsQWgx/xsSgtPmuBejT><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/categories/>Categories</a><a class=site-tag href=/tags/>Tags</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>Case 05 → Devils and details 🪵</h1><p class=article-date>2023-08-12</p></section><article class=markdown-body><p><strong>Background: Prof. Smoke spilled the beans on some top-secret functionality during the interview. The interview was actually published before its deletion.</strong></p><p><strong>Mission: Crack this case and unearth the elusive interview link</strong></p><p><strong>For all the marbles: What is the link to secret interview?</strong></p><hr><p>What we know about Scott’s podcast:</p><ul><li>He usually drops a podcast every week.</li><li>His videos rack up thousands of views.</li><li>On the 900th episode, a video was released, then deleted.</li></ul><p>What anomaly in the video logs are we looking for?</p><ul><li>There is a week that is missing a published video.</li><li>There is a week that has very few views.</li><li>There is a video that has a small live duration.</li></ul><p>First, we structure this data:</p><pre tabindex=0><code class=language-markup data-lang=markup>StorageArchiveLogs
+| parse EventText with TransactionType &#34; blob transaction: &#39;&#34; BlobURI &#34;&#39;&#34; *
+| parse EventText with &#34;Read blob transaction: &#39;&#34; * &#34;&#39; read access (&#34; Reads:long &#34; reads)&#34; *
+| parse EventText with * &#34;&#39; backup is created on &#34; Backup
+| extend Details = parse_url(BlobURI)
+| extend Host = tostring(Details.Host), Path=tostring(Details.Path)
+</code></pre><p>We can save this into a database using <code>.set-or-replace</code> or use <code>let</code> and save this into a variable.</p><p>Let check for hosts in the first point in our knowledge base: <strong>Frequency of uploading podcasts.</strong></p><p>We use <a href=https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/series-periods-validatefunction target=_blank>series_period_validate</a> over 7 days;</p><pre tabindex=0><code class=language-markup data-lang=markup>StorageArchiveLogsEx
+| make-series Series_Reads = sumif(Reads, TransactionType == &#39;Read&#39;) on Timestamp step 1d by Host
+</code></pre><pre tabindex=0><code class=language-markup data-lang=markup>StorageArchiveLogsTs
+| extend (flag, score) = series_periods_validate(Reads, 7.0)
+| where array_sort_asc(score)[0] &gt; 0.6
+| render timechart
+</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/05_1.png><img class=img src=/images/kusto/05_1.png alt=Untitled></a></p><p>We found one host that has 7 day periodicity! <a href=http://okeexeghsqwmda.blob.core.windows.net/ target=_blank>okeexeghsqwmda.blob.core.windows.net</a></p><p>Now, we check for anomalies in the second point in our knowledge base: <strong>Number of views</strong></p><p>We narrow down to two dates on our one host that had less views than usual.</p><pre tabindex=0><code class=language-markup data-lang=markup>StorageArchiveLogsTs
+| where Host in ((StorageArchiveLogsTs
+    | extend (flag, score) = series_periods_validate(Reads, 7.0)
+    | where array_sort_asc(score)[0] &gt; 0.6
+    | project Host))
+| extend (flag, score, baseline) = series_decompose_anomalies(Reads)
+| where array_index_of(flag, -1) &gt; 0
+| render timechart
+</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/05_2.png><img class=img src=/images/kusto/05_2.png alt=Untitled></a></p><p>For the final point in our knowledge base: <strong>Short Time To Live</strong></p><p>We correlate the host that had weirdly less views on a particular date with a delete event.</p><pre tabindex=0><code class=language-markup data-lang=markup>StorageArchiveLogsEx
+| where TransactionType == &#39;Delete&#39;
+| where Host in ((StorageArchiveLogsTs
+| where Host in ((StorageArchiveLogsTs
+    | extend (flag, score) = series_periods_validate(Reads, 7.0)
+    | where array_sort_asc(score)[0] &gt; 0.6
+    | project Host))
+| extend (flag, score, baseline) = series_decompose_anomalies(Reads)
+| where array_index_of(flag, -1) &gt; 0 and array_sort_asc(score)[0] &lt; -5
+| project Host))
+</code></pre><p>Let’s find the backup URL:</p><pre tabindex=0><code class=language-markup data-lang=markup>StorageArchiveLogsEx
+| where TransactionType == &#39;Delete&#39;
+| where Host in ((StorageArchiveLogsTs
+| where Host in ((StorageArchiveLogsTs
+    | extend (flag, score) = series_periods_validate(Reads, 7.0)
+    | where array_sort_asc(score)[0] &gt; 0.6
+    | project Host))
+| extend (flag, score, baseline) = series_decompose_anomalies(Reads)
+| where array_index_of(flag, -1) &gt; 0 and array_sort_asc(score)[0] &lt; -5
+| project Host))
+| join kind=inner(StorageArchiveLogsEx
+    | where TransactionType == &#39;Create&#39;)
+    on BlobURI
+| project BackupURI1
+</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/05_3.png><img class=img src=/images/kusto/05_3.png alt=Untitled></a></p></article><section class=article-labels><a class="article-category li" href=/categories/kusto-detective-agency/><span class=hashtag>#</span>Kusto Detective Agency</a><a class="article-tag li" href=/tags/kql/><span class=hashtag>#</span>kql</a></section><section class=article-navigation><p><a class=link href=/posts/case_04/><span class=li></span>Case 04 → Send one to catch them 🥷🏾</a></p><p><a class=link href=/posts/case_06/><span class=li></span>Case 06 → Something fishy 🎣</a class="link"></p></section><section class=article-discussion><div id=disqus_thread></div><script type=application/javascript>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//the-mess-of-nebula.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></section></div><section id=footer class="footer max-body-width"><p>© 2023 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script><script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","your-google-analytics-id","auto"),ga("send","pageview"))</script><script async src=https://www.google-analytics.com/analytics.js></script></div></body></html>
