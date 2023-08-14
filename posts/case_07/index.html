@@ -1,0 +1,87 @@
+<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.117.0"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light dark"><meta name=supported-color-schemes content="light dark"><title>Case 07 → Da Vinci’s Birds 🛩️&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=stylesheet href=/css/core.min.3dff9636f60da21a7bce297e09d08d8f636d1b8e7def5079c790207b0c0dfdc945858b105a0c7fc6c4a0b4f9ae05e8d3.css integrity=sha384-Pf+WNvYNohp7zil+CdCNj2NtG45971B5x5AgewwN/clFhYsQWgx/xsSgtPmuBejT><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/categories/>Categories</a><a class=site-tag href=/tags/>Tags</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>Case 07 → Da Vinci’s Birds 🛩️</h1><p class=article-date>2023-08-14</p></section><article class=markdown-body><p><strong>Background</strong>: <strong>Krypto slipped through the fingers of Digitown&rsquo;s law enforcement.</strong></p><p><strong>Mission: We need your expertise and experience to help us find the final destination of Krypto.</strong></p><p><strong>For all the marbles: In which city did the suspect land?</strong></p><hr><p>What we know:</p><ul><li>Krypto was spotted in Doha airport on August 11, 2023, between 03:30 AM and 05:30 AM (UTC).</li><li>Krypto is up in the skies doing plane hopping in his wingsuit.</li></ul><p>We need to find which flights were at the Doha Airport at during time.</p><pre tabindex=0><code class=language-markup data-lang=markup>let s2_precision = 13; // ~1 km
+Airports
+| where municipality == &#39;Doha&#39;
+| extend key=geo_point_to_s2cell(lon, lat, s2_precision)
+| join kind=inner (
+    Flights
+    | extend key=geo_point_to_s2cell(lon, lat, s2_precision)
+    | where onground // Only consider planes that were on the ground
+) on key
+| where Timestamp between(datetime(2023-08-11 03:30:00.0000000)..datetime(2023-08-11 05:30:00.000))
+| distinct callsign
+</code></pre><p>Which of these flights were on air after 5:30 am.</p><pre tabindex=0><code class=language-markup data-lang=markup>let s2_precision = 13; 
+Flights
+| where callsign in ((
+    Airports
+    | where municipality == &#39;Doha&#39;
+    | extend key=geo_point_to_s2cell(lon, lat, s2_precision)
+    | join kind=inner (
+        Flights
+        | extend key=geo_point_to_s2cell(lon, lat, s2_precision)
+        | where onground // Only consider planes that were on the ground
+    ) on key
+    | where Timestamp between(datetime(2023-08-11 03:30:00.0000000)..datetime(2023-08-11 05:30:00.000))
+    | distinct callsign))
+| where Timestamp &gt; datetime(2023-08-11 05:30:00.000) and onground == false
+| summarize dcount(callsign)
+</code></pre><p>He hoped off of these 5 planes to another at some point. We need to find planes that at the same place at the same time.</p><p>He has to jump from a high to a low point at a distance that makes sense for life. So, we filter by altitude difference.</p><pre tabindex=0><code class=language-markup data-lang=markup>Airports
+| where municipality == &#34;Doha&#34;
+
+let s2_precision = 13; 
+Flights
+| where callsign in ((
+    Airports
+    | where municipality == &#39;Doha&#39;
+    | extend key=geo_point_to_s2cell(lon, lat, s2_precision)
+    | join kind=inner (
+        Flights
+        | extend key=geo_point_to_s2cell(lon, lat, s2_precision)
+        | where onground // Only consider planes that were on the ground
+    ) on key
+    | where Timestamp between(datetime(2023-08-11 03:30:00.0000000)..datetime(2023-08-11 05:30:00.000))
+    | distinct callsign))
+| where Timestamp &gt; datetime(2023-08-11 05:30:00.000) and onground == false
+| extend key = geo_point_to_s2cell(lon, lat, s2_precision)
+| join kind=inner (Flights
+    | extend key=geo_point_to_s2cell(lon, lat, s2_precision)
+    | where Timestamp &gt; datetime(2023-08-11 05:30:00.000))
+    on key, Timestamp
+| where callsign != callsign1
+| extend altitudeDiff = geoaltitude - geoaltitude1
+| where altitudeDiff &lt; 1000 and altitudeDiff &gt; 0
+</code></pre><p>We are down to one plane. Let us go get Krypto! We need to find out where the plane he jumps to will land.</p><pre tabindex=0><code class=language-markup data-lang=markup>Airports
+| where municipality == &#34;Doha&#34;
+
+let s2_precision = 13; 
+Flights
+| where callsign in ((
+    Airports
+    | where municipality == &#39;Doha&#39;
+    | extend key=geo_point_to_s2cell(lon, lat, s2_precision)
+    | join kind=inner (
+        Flights
+        | extend key=geo_point_to_s2cell(lon, lat, s2_precision)
+        | where onground // Only consider planes that were on the ground
+    ) on key
+    | where Timestamp between(datetime(2023-08-11 03:30:00.0000000)..datetime(2023-08-11 05:30:00.000))
+    | distinct callsign))
+| where Timestamp &gt; datetime(2023-08-11 05:30:00.000) and onground == false
+| extend key = geo_point_to_s2cell(lon, lat, s2_precision)
+| join kind=inner (Flights
+    | extend key=geo_point_to_s2cell(lon, lat, s2_precision)
+    | where Timestamp &gt; datetime(2023-08-11 05:30:00.000))
+    on key, Timestamp
+| where callsign != callsign1
+| extend altitudeDiff = geoaltitude - geoaltitude1
+| where altitudeDiff &lt; 1000 and altitudeDiff &gt; 0
+| project Timestamp1, callsign=callsign1, lat1, lon1, key1
+| join kind=inner (
+    Flights    
+    | where onground // Check planes that are only on the ground
+    | summarize (LandingTime, LandingLon, LandingLat)=arg_max(Timestamp, lon, lat) by callsign 
+)  on callsign
+| where LandingTime &gt; Timestamp1 // Make sure we count only flights that fly from London
+| extend key=geo_point_to_s2cell(LandingLon, LandingLat, s2_precision)
+| lookup (Airports | extend key=geo_point_to_s2cell(lon, lat, s2_precision)) on key
+| where geo_distance_2points(lon, lat, LandingLon, LandingLat) &lt; 5000
+</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/07_1.png><img class=img src=/images/kusto/07_1.png alt></a></p></article><section class=article-labels><a class="article-category li" href=/categories/kusto-detective-agency/><span class=hashtag>#</span>Kusto Detective Agency</a><a class="article-tag li" href=/tags/kql/><span class=hashtag>#</span>kql</a></section><section class=article-navigation><p><a class=link href=/posts/case_00/><span class=li></span>Case 00 → Comme le Chef! 😎</a class="link"></p></section><section class=article-discussion><div id=disqus_thread></div><script type=application/javascript>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//the-mess-of-nebula.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></section></div><section id=footer class="footer max-body-width"><p>© 2023 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script><script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","your-google-analytics-id","auto"),ga("send","pageview"))</script><script async src=https://www.google-analytics.com/analytics.js></script></div></body></html>
