@@ -24,8 +24,7 @@ Krypto
 | summarize runsperweek = count() by week_start, RunnerID
 | where runsperweek between (3 .. 4)
 | distinct RunnerID
-</code></pre><p>These are the runners who fit the profile we are looking for.</p><p>Now we need to filter further to runners who run together (starting at the same place, at the same time):</p><aside>💡 Stumbled on and learnt about H3 here → [Uber H3]([H3: Uber’s Hexagonal Hierarchical Spatial Index | Uber Blog](https://www.uber.com/en-NL/blog/h3/))
-More about S2 cell → [Google’s S2, geometry on the sphere, cells and Hilbert curve | Terra Incognita (christianperone.com)](https://blog.christianperone.com/2015/08/googles-s2-geometry-on-the-sphere-cells-and-hilbert-curve/)</aside><pre tabindex=0><code class=language-markup data-lang=markup>Runs
+</code></pre><p>These are the runners who fit the profile we are looking for.</p><p>Now we need to filter further to runners who run together (starting at the same place, at the same time):</p><blockquote><p>Stumbled on and learnt about H3 here → [Uber H3](<a href=https://www.uber.com/en-NL/blog/h3/ target=_blank>H3: Uber’s Hexagonal Hierarchical Spatial Index | Uber Blog</a>)</p><p>More about S2 cell → <a href=https://blog.christianperone.com/2015/08/googles-s2-geometry-on-the-sphere-cells-and-hilbert-curve/ target=_blank>Google’s S2, geometry on the sphere, cells and Hilbert curve | Terra Incognita (christianperone.com)</a></p></blockquote><pre tabindex=0><code class=language-markup data-lang=markup>Runs
 | where Distance between (8 .. 12)
 | extend start_week = startofweek(Timestamp)
 | summarize count() by start_week, RunnerID
