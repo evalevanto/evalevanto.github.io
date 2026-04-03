@@ -1,11 +1,86 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>return address overwrite on The Mess Of Nebula</title><link>http://evalevanto.github.io/tags/return-address-overwrite/</link><description>Recent content in return address overwrite on The Mess Of Nebula</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><copyright>© 2023 Eva Levanto</copyright><lastBuildDate>Sun, 18 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="http://evalevanto.github.io/tags/return-address-overwrite/index.xml" rel="self" type="application/rss+xml"/><item><title>AHCTF2021: NameCheck</title><link>http://evalevanto.github.io/posts/namecheck/</link><pubDate>Sun, 18 Sep 2022 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/namecheck/</guid><description>For the birds It has been a while since I have blogged. The importance of doing so has not been absent only outweighed by the inertia(that dread to begin). This is the start of an attempt to put more of my thoughts on e-paper. I also maintain a telegram space where I dump materials/resources I encounter as I go along.
-Checksec [*] &amp;#39;/home/levanto/Documents/Return-To-ROP/ChasingFlags/AHCTF/finals/namecheck&amp;#39; Arch: i386-32-little RELRO: Partial RELRO Stack: No canary found NX: NX disabled PIE: No PIE (0x8048000) RWX: Has RWX segments .</description></item><item><title>MicroCorruption: Johannesburg</title><link>http://evalevanto.github.io/posts/microcorruption-jo/</link><pubDate>Tue, 01 Sep 2020 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/microcorruption-jo/</guid><description>At this point in the journey, you expect a manual to greet you:
-The lock is attached to HSM-1 module. Passwords that are very long are rejected. Just how long is too long? The main function just calls login.
-The prompt states the password range should be within 8 - 16 characters long. However, from the input parameters of the getsn function:
-r14: Holds length of the input buffer; 0x3f(63) characters.</description></item><item><title>MicroCorruption: Montevideo</title><link>http://evalevanto.github.io/posts/microcorruption-monte/</link><pubDate>Tue, 01 Sep 2020 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/microcorruption-monte/</guid><description>You find a manual:
-This lock is attached to HSM-2 module. This means, no unlock door function in the lock firmware. This reminds you of a while back in WhiteHorse. The code follows internal secure development process. mmh. The main function just calls login.
-The prompt states for an input range of 8 - 16 characters. However, from the input to getsn function:
-r14: this holds the length of the input buffer; 0x30(48) characters.</description></item><item><title>MicroCorruption: Whitehorse</title><link>http://evalevanto.github.io/posts/microcorruption-whitehorse/</link><pubDate>Tue, 01 Sep 2020 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/microcorruption-whitehorse/</guid><description>Slaps you with a manual:
-This lock is attached to a HSM-2 module. Function to unlock door no longer in the lock firmware. The main function just calls login. You set a breakpoint at login and a quick test input of aaaaaaaaaaaaaaaa
-The login function:
-The prompt gives a range for input to be between 8 to 16 characters. However, the parameters for the getsn function: r14: Holds the length of the input buffer.</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Return Address Overwrite on The Mess Of Nebula</title><link>http://evalevanto.github.io/tags/return-address-overwrite/</link><description>Recent content in Return Address Overwrite on The Mess Of Nebula</description><generator>Hugo</generator><language>en-us</language><copyright>© 2026 Eva Levanto</copyright><lastBuildDate>Sun, 18 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="http://evalevanto.github.io/tags/return-address-overwrite/index.xml" rel="self" type="application/rss+xml"/><item><title>AHCTF2021: NameCheck</title><link>http://evalevanto.github.io/posts/namecheck/</link><pubDate>Sun, 18 Sep 2022 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/namecheck/</guid><description>&lt;h4 id="for-the-birds"&gt;For the birds&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;It has been a while since I have blogged. The importance of doing so has not been absent only outweighed by the inertia(that dread to begin). This is the start of an attempt to put more of my thoughts on e-paper. I also maintain a &lt;a href="https://t.me/&amp;#43;UiasApN2xtWSWPy9"target="_blank"&gt;telegram space&lt;/a&gt; where I dump materials/resources I encounter as I go along.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/nm_header.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/nm_header.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="checksec"&gt;Checksec&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="o"&gt;[&lt;/span&gt;*&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;/home/levanto/Documents/Return-To-ROP/ChasingFlags/AHCTF/finals/namecheck&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; Arch: i386-32-little
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; RELRO: Partial RELRO
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; Stack: No canary found
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; NX: NX disabled
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; PIE: No PIE &lt;span class="o"&gt;(&lt;/span&gt;0x8048000&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; RWX: Has RWX segments
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;hr&gt;
+&lt;h3 id="rodata"&gt;.rodata&lt;/h3&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;Contents of section .rodata:
+ 80486d8 03000000 01000200 2f62696e 2f636174 ......../bin/cat
+ 80486e8 20666c61 6700456e 74657220 796f7520 flag.Enter you
+ 80486f8 6e616d65 3a200050 61727369 6e672074 name: .Parsing t
+ 8048708 68652075 7365726e 616d6520 004e616d he username .Nam
+ 8048718 65206d65 65747320 7374616e 64617264 e meets standard
+ 8048728 732e2042 7965203a 29000000 4e616d65 s. Bye :)...Name
+ 8048738 20666169 6c656420 746f206d 65657420 failed to meet
+ 8048748 7374616e 64617264 732e2042 79653a29 standards. Bye:)
+ 8048758 00 
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;/bin/cat flag @ 0x80486e0&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Let&amp;rsquo;s create a fake flag file:&lt;/p&gt;</description></item><item><title>MicroCorruption: Johannesburg</title><link>http://evalevanto.github.io/posts/microcorruption-jo/</link><pubDate>Tue, 01 Sep 2020 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/microcorruption-jo/</guid><description>&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/microcorruption/jo/jo.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/microcorruption/jo/jo.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;At this point in the journey, you expect a manual to greet you:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/microcorruption/jo/jo-details.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/microcorruption/jo/jo-details.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The lock is &lt;strong&gt;attached to HSM-1 module&lt;/strong&gt;.&lt;/li&gt;
+&lt;li&gt;Passwords that are &lt;strong&gt;very long are rejected&lt;/strong&gt;. Just how long is too long?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The &lt;code&gt;main&lt;/code&gt; function just calls &lt;code&gt;login&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/microcorruption/jo/jo-login.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/microcorruption/jo/jo-login.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The prompt states the password range should be within &lt;code&gt;8 - 16&lt;/code&gt; characters long. However, from the input parameters of the &lt;code&gt;getsn&lt;/code&gt; function:&lt;/p&gt;</description></item><item><title>MicroCorruption: Montevideo</title><link>http://evalevanto.github.io/posts/microcorruption-monte/</link><pubDate>Tue, 01 Sep 2020 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/microcorruption-monte/</guid><description>&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/microcorruption/montevideo/monte.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/microcorruption/montevideo/monte.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;You find a manual:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/microcorruption/montevideo/monte-dets.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/microcorruption/montevideo/monte-dets.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This lock is &lt;strong&gt;attached to HSM-2 module&lt;/strong&gt;. This means, no unlock door function in the lock firmware. This reminds you of a while back in &lt;a href="https://evalevanto.github.io/blog/microcorruption-whitehorse"target="_blank"&gt;&lt;em&gt;WhiteHorse&lt;/em&gt;&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;The code follows &lt;strong&gt;internal secure development process&lt;/strong&gt;. mmh.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The &lt;code&gt;main&lt;/code&gt; function just calls &lt;code&gt;login&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/microcorruption/montevideo/monte-login.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/microcorruption/montevideo/monte-login.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The prompt states for an input range of &lt;code&gt;8 - 16&lt;/code&gt; characters. However, from the input to &lt;code&gt;getsn&lt;/code&gt; function:&lt;/p&gt;</description></item><item><title>MicroCorruption: Whitehorse</title><link>http://evalevanto.github.io/posts/microcorruption-whitehorse/</link><pubDate>Tue, 01 Sep 2020 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/microcorruption-whitehorse/</guid><description>&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/microcorruption/whitehorse/whitehorse.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/microcorruption/whitehorse/whitehorse.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Slaps you with a manual:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/microcorruption/whitehorse/whitehorse-details.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/microcorruption/whitehorse/whitehorse-details.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This lock is &lt;strong&gt;attached to a HSM-2 module&lt;/strong&gt;.&lt;/li&gt;
+&lt;li&gt;Function to unlock door &lt;strong&gt;no longer in the lock firmware&lt;/strong&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The &lt;code&gt;main&lt;/code&gt; function just calls &lt;code&gt;login&lt;/code&gt;. You set a breakpoint at &lt;code&gt;login&lt;/code&gt; and a quick test input of &lt;code&gt;aaaaaaaaaaaaaaaa&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/microcorruption/whitehorse/whitehorse-first-test-input.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/microcorruption/whitehorse/whitehorse-first-test-input.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;login&lt;/code&gt; function:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/microcorruption/whitehorse/whitehorse-login.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/microcorruption/whitehorse/whitehorse-login.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The prompt gives a range for input to be between 8 to 16 characters.&lt;/li&gt;
+&lt;li&gt;However, the parameters for the &lt;code&gt;getsn&lt;/code&gt; function:
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;r14&lt;/code&gt;: Holds the length of the input buffer. &lt;code&gt;#0x30(48)&lt;/code&gt; characters. This is room for inputs &amp;gt; 16 chars.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;r15&lt;/code&gt;: Holds the address to the input buffer -&amp;gt; &lt;code&gt;#0x34d2&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Input is passed to &lt;code&gt;conditional_unlock_door&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/microcorruption/whitehorse/whitehorse-conditional.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/microcorruption/whitehorse/whitehorse-conditional.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;</description></item></channel></rss>

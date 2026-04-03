@@ -1,42 +1,108 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kusto Detective Agency on The Mess Of Nebula</title><link>http://evalevanto.github.io/categories/kusto-detective-agency/</link><description>Recent content in Kusto Detective Agency on The Mess Of Nebula</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><copyright>© 2023 Eva Levanto</copyright><lastBuildDate>Wed, 13 Dec 2023 00:00:00 +0000</lastBuildDate><atom:link href="http://evalevanto.github.io/categories/kusto-detective-agency/index.xml" rel="self" type="application/rss+xml"/><item><title>Case 10 → The Battle Of Trojan 🐴</title><link>http://evalevanto.github.io/posts/case_10/</link><pubDate>Wed, 13 Dec 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_10/</guid><description>Background: There&amp;rsquo;s this sneaky trojan component called KuandaListener lurking in the machine.
-Mission: Dive into captured logs and figure out what the trojan is up to.
-For all the marbles: Find anything that can help.
-I almost fell off the wagon of not completing missions… not this time.
-We do not have a lot to go on expect the logs.
-KuandaLogs | take 50 KuandaLogs | summarize count() by substring(Message, 0, 10) A sample sending an.</description></item><item><title>Case 09 → Taken ☎️</title><link>http://evalevanto.github.io/posts/case_09/</link><pubDate>Wed, 18 Oct 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_09/</guid><description>Background: Krypto kidnapped none other than Professor Smoke himself!
-Mission: Use the graph-matching tool to figure out if an attack on the KDA network happened.
-For all the marbles: What machine was compromised.
-Graphs! and schnitzels.. at the end.. maybe?
-What we know
-All requests to the KDA network flow through: Gateway machine before taking a journey through various Backends until they finally reach the Admin. Requests get split to sub-tasks executed on the BE or Admin.</description></item><item><title>Case 08 → Caught a Runner’s High 😶‍🌫️</title><link>http://evalevanto.github.io/posts/case_08/</link><pubDate>Fri, 08 Sep 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_08/</guid><description>Background: Krypto got away again and is hiding in plain sight in Barcelona.
-Mission: Pinpoint where Krypto starts his runs.
-For all the marbles: Where can we catch the suspect?
-What we know:
-Krypto runs 3-4 times a week. Krypto hits 8-12km on every run. The agents deciphered half of the required 16 numbers of the full Barcelona city code. Let’s first attempt to find the full city code. We use the hints in the training to look through the famous places in the city especially the Sagrada Familia Passion and Nativity facade:</description></item><item><title>Case 07 → Da Vinci’s Birds 🛩️</title><link>http://evalevanto.github.io/posts/case_07/</link><pubDate>Mon, 14 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_07/</guid><description>Background: Krypto slipped through the fingers of Digitown&amp;rsquo;s law enforcement.
-Mission: We need your expertise and experience to help us find the final destination of Krypto.
-For all the marbles: In which city did the suspect land?
-What we know:
-Krypto was spotted in Doha airport on August 11, 2023, between 03:30 AM and 05:30 AM (UTC). Krypto is up in the skies doing plane hopping in his wingsuit. We need to find which flights were at the Doha Airport at during time.</description></item><item><title>Case 00 → Comme le Chef! 😎</title><link>http://evalevanto.github.io/posts/case_00/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_00/</guid><description>Mission: Dig into the vast archives of our system operation logs from the legendary year 2022. You&amp;rsquo;re on a quest to unearth the absolute legend, the detective with the biggest impact on our business—the one who raked in the most moolah by claiming bounties like a boss!
-For all the marbles…: Who is the detective that earned most money in 2022?
-Create the table.
-.execute database script &amp;lt;| .create table DetectiveCases(Timestamp:datetime, EventType:string, DetectiveId:string, CaseId: string, Properties:dynamic) //clear any previously ingested data if such exists .</description></item><item><title>Case 01 → Something’s leaking 👃🏾</title><link>http://evalevanto.github.io/posts/case_01/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_01/</guid><description>Background: It&amp;rsquo;s a fresh new year, and citizens of Digitown are in an uproar. Their water and electricity bills have inexplicably doubled, despite no changes in their consumption.
-Mission: work your magic with this data and query, to inspect the telemetry data responsible for billing, unravel any hidden errors, and set things right.
-For all the marbles: What is the total bills amount due in April?
-There’s something fishy with the billing.</description></item><item><title>Case 02 → Gone Phishing 🪱</title><link>http://evalevanto.github.io/posts/case_02/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_02/</guid><description>Background: The complaints are pouring in, and people are fed up with the sudden increase in phishing calls attempting to steal their identity details.
-Mission: Analyze the data and use your detective skills to find any patterns or clues that could lead us to the source of these calls.
-For all the marbles: What phone number is used for placing the phishing calls?
-To catch a phisherman.
-.execute database script &amp;lt;| .</description></item><item><title>Case 03 → A Brief History of Time 🚘</title><link>http://evalevanto.github.io/posts/case_03/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_03/</guid><description>Background: There has been a sudden increase in unsolved cases of stolen cars all across our city. It&amp;rsquo;s possible that the car&amp;rsquo;s identification plates were replaced during the robbery, which makes this case even more challenging.
-Mission: analyze the data to find any patterns or clues that could lead us to the location of these stolen cars. It is very likely that all the stolen cars are being stored in the same location.</description></item><item><title>Case 04 → Send one to catch them 🥷🏾</title><link>http://evalevanto.github.io/posts/case_04/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_04/</guid><description>Background: Someone has hacked into the Digitown municipality system and stolen these documents.
-Mission: Shed some light on who is behind these crimes and clear Gaia’s name.
-For all the marbles: Who is behind all this?
-A guy got in and out of a system with a document.
-.execute database script &amp;lt;| .create-merge table IpInfo (IpCidr:string, Info:string) //clear any previously ingested data if such exists .clear table IpInfo data .ingest into table IpInfo (@&amp;#39;https://kustodetectiveagency.</description></item><item><title>Case 05 → Devils and details 🪵</title><link>http://evalevanto.github.io/posts/case_05/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_05/</guid><description>Background: Prof. Smoke spilled the beans on some top-secret functionality during the interview. The interview was actually published before its deletion.
-Mission: Crack this case and unearth the elusive interview link
-For all the marbles: What is the link to secret interview?
-What we know about Scott’s podcast:
-He usually drops a podcast every week. His videos rack up thousands of views. On the 900th episode, a video was released, then deleted.</description></item><item><title>Case 06 → Something fishy 🎣</title><link>http://evalevanto.github.io/posts/case_06/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_06/</guid><description>Background: Kuanda has been recruiting cyber-crime specialists and every new member has to spend a week at the National Gallery of Art.
-Mission: If you can decode the instructions, you might just have a shot at infiltrating their system and finding out what they&amp;rsquo;re really up to.
-For all the marbles: Who is the leader of Kuanda.org?
-It’s Sherlock Holmes up in this.
-We receive a decoded text that new recruiters receive:</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kusto Detective Agency on The Mess Of Nebula</title><link>http://evalevanto.github.io/categories/kusto-detective-agency/</link><description>Recent content in Kusto Detective Agency on The Mess Of Nebula</description><generator>Hugo</generator><language>en-us</language><copyright>© 2026 Eva Levanto</copyright><lastBuildDate>Wed, 13 Dec 2023 00:00:00 +0000</lastBuildDate><atom:link href="http://evalevanto.github.io/categories/kusto-detective-agency/index.xml" rel="self" type="application/rss+xml"/><item><title>Case 10 → The Battle Of Trojan 🐴</title><link>http://evalevanto.github.io/posts/case_10/</link><pubDate>Wed, 13 Dec 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_10/</guid><description>&lt;p&gt;&lt;strong&gt;Background&lt;/strong&gt;: &lt;strong&gt;There&amp;rsquo;s this sneaky trojan component called &lt;code&gt;KuandaListener&lt;/code&gt; lurking in the machine.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Mission: Dive into captured logs and figure out what the trojan is up to.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;For all the marbles: Find anything that can help.&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;I almost fell off the wagon of not completing missions… not this time.&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;We do not have a lot to go on expect the logs.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-jsx" data-lang="jsx"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;KuandaLogs&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="nx"&gt;take&lt;/span&gt; &lt;span class="mi"&gt;50&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/kusto/10_0.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/kusto/10_0.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-jsx" data-lang="jsx"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;KuandaLogs&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="nx"&gt;summarize&lt;/span&gt; &lt;span class="nx"&gt;count&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="nx"&gt;by&lt;/span&gt; &lt;span class="nx"&gt;substring&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;Message&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/kusto/10_1.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/kusto/10_1.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;</description></item><item><title>Case 09 → Taken ☎️</title><link>http://evalevanto.github.io/posts/case_09/</link><pubDate>Wed, 18 Oct 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_09/</guid><description>&lt;p&gt;&lt;strong&gt;Background&lt;/strong&gt;: &lt;strong&gt;Krypto kidnapped none other than Professor Smoke himself!&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Mission: Use the graph-matching tool to figure out if an attack on the KDA network happened.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;For all the marbles: What machine was compromised.&lt;/strong&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;a href="https://learn.microsoft.com/en-us/azure/data-explorer/graph-overview"target="_blank"&gt;Graphs!&lt;/a&gt; and schnitzels.. at the end.. maybe?&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;What we know&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;All requests to the KDA network flow through: Gateway machine before taking a journey through various Backends until they finally reach the Admin.&lt;/li&gt;
+&lt;li&gt;Requests get split to sub-tasks executed on the BE or Admin.&lt;/li&gt;
+&lt;li&gt;Each machine undergoes periodic vulnerability scans.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Treasure hunt&lt;/strong&gt;&lt;/p&gt;</description></item><item><title>Case 08 → Caught a Runner’s High 😶‍🌫️</title><link>http://evalevanto.github.io/posts/case_08/</link><pubDate>Fri, 08 Sep 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_08/</guid><description>&lt;p&gt;&lt;strong&gt;Background&lt;/strong&gt;: &lt;strong&gt;Krypto got away again and is hiding in plain sight in Barcelona.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Mission: Pinpoint where Krypto starts his runs.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;For all the marbles: Where can we catch the suspect?&lt;/strong&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;What we know:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Krypto runs 3-4 times a week.&lt;/li&gt;
+&lt;li&gt;Krypto hits 8-12km on every run.&lt;/li&gt;
+&lt;li&gt;The agents deciphered half of the required 16 numbers of the full Barcelona city code.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Let’s first attempt to find the full city code. We use the hints in the training to look through the famous places in the city especially the Sagrada Familia Passion and Nativity facade:&lt;/p&gt;</description></item><item><title>Case 07 → Da Vinci’s Birds 🛩️</title><link>http://evalevanto.github.io/posts/case_07/</link><pubDate>Mon, 14 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_07/</guid><description>&lt;p&gt;&lt;strong&gt;Background&lt;/strong&gt;: &lt;strong&gt;Krypto slipped through the fingers of Digitown&amp;rsquo;s law enforcement.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Mission: We need your expertise and experience to help us find the final destination of Krypto.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;For all the marbles: In which city did the suspect land?&lt;/strong&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;What we know:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Krypto was spotted in Doha airport on August 11, 2023, between 03:30 AM and 05:30 AM (UTC).&lt;/li&gt;
+&lt;li&gt;Krypto is up in the skies doing plane hopping in his wingsuit.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We need to find which flights were at the Doha Airport at during time.&lt;/p&gt;</description></item><item><title>Case 00 → Comme le Chef! 😎</title><link>http://evalevanto.github.io/posts/case_00/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_00/</guid><description>&lt;p&gt;&lt;strong&gt;Mission: Dig into the vast archives of our system operation logs from the legendary year 2022. You&amp;rsquo;re on a quest to unearth the absolute legend, the detective with the biggest impact on our business—the one who raked in the most moolah by claiming bounties like a boss!&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;For all the marbles…: Who is the detective that earned most money in 2022?&lt;/strong&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;Create the table.&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code class="language-markup" data-lang="markup"&gt;.execute database script &amp;lt;|
+.create table DetectiveCases(Timestamp:datetime, EventType:string, DetectiveId:string, CaseId: string, Properties:dynamic)
+//clear any previously ingested data if such exists
+.clear table DetectiveCases data
+// Load the data:
+.ingest async into table DetectiveCases (@&amp;#39;https://kustodetectiveagency.blob.core.windows.net/kda2start/log_00000.csv.gz&amp;#39;)
+.ingest async into table DetectiveCases (@&amp;#39;https://kustodetectiveagency.blob.core.windows.net/kda2start/log_00001.csv.gz&amp;#39;)
+.ingest into table DetectiveCases (@&amp;#39;https://kustodetectiveagency.blob.core.windows.net/kda2start/log_00002.csv.gz&amp;#39;)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;The boss, in each case, has to be the one who solved the case first.&lt;/p&gt;</description></item><item><title>Case 01 → Something’s leaking 👃🏾</title><link>http://evalevanto.github.io/posts/case_01/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_01/</guid><description>&lt;p&gt;&lt;strong&gt;Background: It&amp;rsquo;s a fresh new year, and citizens of Digitown are in an uproar. Their water and electricity bills have inexplicably doubled, despite no changes in their consumption.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Mission: work your magic with this data and query, to inspect the telemetry data responsible for billing, unravel any hidden errors, and set things right.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;For all the marbles: What is the total bills amount due in April?&lt;/strong&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;There’s something fishy with the billing. Let’s inspect the April records to get to the bottom of this.&lt;/p&gt;</description></item><item><title>Case 02 → Gone Phishing 🪱</title><link>http://evalevanto.github.io/posts/case_02/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_02/</guid><description>&lt;p&gt;&lt;strong&gt;Background: The complaints are pouring in, and people are fed up with the sudden increase in phishing calls attempting to steal their identity details.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Mission&lt;/strong&gt;: &lt;strong&gt;Analyze the data and use your detective skills to find any patterns or clues that could lead us to the source of these calls.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;For all the marbles: What phone number is used for placing the phishing calls?&lt;/strong&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;To catch a phisherman.&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code class="language-markup" data-lang="markup"&gt;.execute database script &amp;lt;|
+.create-merge table PhoneCalls (Timestamp:datetime, EventType:string, CallConnectionId:string, Properties:dynamic)
+//clear any previously ingested data if such exists
+.clear table PhoneCalls data
+.ingest async into table PhoneCalls (@&amp;#39;https://kustodetectiveagency.blob.core.windows.net/kda2c2phonecalls/log_00000.csv.gz&amp;#39;)
+.ingest async into table PhoneCalls (@&amp;#39;https://kustodetectiveagency.blob.core.windows.net/kda2c2phonecalls/log_00001.csv.gz&amp;#39;)
+// Last command is running sync, so when it finishes the data is already ingested.
+// It can take about 1min to run.
+.ingest into table PhoneCalls (@&amp;#39;https://kustodetectiveagency.blob.core.windows.net/kda2c2phonecalls/log_00002.csv.gz&amp;#39;)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;We need to understand the structure of this data.&lt;/p&gt;</description></item><item><title>Case 03 → A Brief History of Time 🚘</title><link>http://evalevanto.github.io/posts/case_03/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_03/</guid><description>&lt;p&gt;&lt;strong&gt;Background: There has been a sudden increase in unsolved cases of stolen cars all across our city. It&amp;rsquo;s possible that the car&amp;rsquo;s identification plates were replaced during the robbery, which makes this case even more challenging.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Mission: analyze the data to find any patterns or clues that could lead us to the location of these stolen cars. It is very likely that all the stolen cars are being stored in the same location.&lt;/strong&gt;&lt;/p&gt;</description></item><item><title>Case 04 → Send one to catch them 🥷🏾</title><link>http://evalevanto.github.io/posts/case_04/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_04/</guid><description>&lt;p&gt;&lt;strong&gt;Background: Someone has hacked into the Digitown municipality system and stolen these documents.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Mission: Shed some light on who is behind these crimes and clear Gaia’s name.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;For all the marbles:&lt;/strong&gt; &lt;strong&gt;Who is behind all this?&lt;/strong&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;A guy got in and out of a system with a document.&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code class="language-markup" data-lang="markup"&gt;.execute database script &amp;lt;|
+.create-merge table IpInfo (IpCidr:string, Info:string)
+//clear any previously ingested data if such exists
+.clear table IpInfo data
+.ingest into table IpInfo (@&amp;#39;https://kustodetectiveagency.blob.core.windows.net/kda2c4network/ip-lookup.csv.gz&amp;#39;)
+.create-merge table NetworkMetrics (Timestamp:datetime, ClientIP:string, TargetIP:string, BytesSent:long, BytesReceived:long, NewConnections:int)
+.clear table NetworkMetrics data
+.ingest async into table NetworkMetrics (@&amp;#39;https://kustodetectiveagency.blob.core.windows.net/kda2c4network/log_00000.csv.gz&amp;#39;)
+.ingest async into table NetworkMetrics (@&amp;#39;https://kustodetectiveagency.blob.core.windows.net/kda2c4network/log_00001.csv.gz&amp;#39;)
+// Last command is running sync, so when it finishes the data is already ingested.
+// It can take about 1.5min to run.
+.ingest into table NetworkMetrics (@&amp;#39;https://kustodetectiveagency.blob.core.windows.net/kda2c4network/log_00002.csv.gz&amp;#39;)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;We need to find the anomaly.&lt;/p&gt;</description></item><item><title>Case 05 → Devils and details 🪵</title><link>http://evalevanto.github.io/posts/case_05/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_05/</guid><description>&lt;p&gt;&lt;strong&gt;Background: Prof. Smoke spilled the beans on some top-secret functionality during the interview. The interview was actually published before its deletion.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Mission: Crack this case and unearth the elusive interview link&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;For all the marbles: What is the link to secret interview?&lt;/strong&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;What we know about Scott’s podcast:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;He usually drops a podcast every week.&lt;/li&gt;
+&lt;li&gt;His videos rack up thousands of views.&lt;/li&gt;
+&lt;li&gt;On the 900th episode, a video was released, then deleted.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;What anomaly in the video logs are we looking for?&lt;/p&gt;</description></item><item><title>Case 06 → Something fishy 🎣</title><link>http://evalevanto.github.io/posts/case_06/</link><pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/case_06/</guid><description>&lt;p&gt;&lt;strong&gt;Background: Kuanda has been recruiting cyber-crime specialists and every new member has to spend a week at the National Gallery of Art.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Mission: If you can decode the instructions, you might just have a shot at infiltrating their system and finding out what they&amp;rsquo;re really up to.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;For all the marbles: Who is the leader of Kuanda.org?&lt;/strong&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;It’s Sherlock Holmes up in this.&lt;/p&gt;
+&lt;p&gt;We receive a decoded text that new recruiters receive:&lt;/p&gt;</description></item></channel></rss>

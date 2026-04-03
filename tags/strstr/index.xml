@@ -1,3 +1,20 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>strstr on The Mess Of Nebula</title><link>http://evalevanto.github.io/tags/strstr/</link><description>Recent content in strstr on The Mess Of Nebula</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><copyright>© 2023 Eva Levanto</copyright><lastBuildDate>Sat, 17 Aug 2019 00:00:00 +0000</lastBuildDate><atom:link href="http://evalevanto.github.io/tags/strstr/index.xml" rel="self" type="application/rss+xml"/><item><title>AH19CTF WriteUps: Command Parser</title><link>http://evalevanto.github.io/posts/commandparser/</link><pubDate>Sat, 17 Aug 2019 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/commandparser/</guid><description>What&amp;rsquo;s provided: Server access to a directory containing an executable and a flag file. You cannot just cat flag because r--r----- 1 commandparserctf-pwn root ... flag and of course, your whoami profile is not in the sudoers list.
-A link to download the executable file. This is good. You can dissassemble it later.
-Let&amp;rsquo;s get cracking :D Your first step is to run the executable and have a clue of what it does.</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Strstr on The Mess Of Nebula</title><link>http://evalevanto.github.io/tags/strstr/</link><description>Recent content in Strstr on The Mess Of Nebula</description><generator>Hugo</generator><language>en-us</language><copyright>© 2026 Eva Levanto</copyright><lastBuildDate>Sat, 17 Aug 2019 00:00:00 +0000</lastBuildDate><atom:link href="http://evalevanto.github.io/tags/strstr/index.xml" rel="self" type="application/rss+xml"/><item><title>AH19CTF WriteUps: Command Parser</title><link>http://evalevanto.github.io/posts/commandparser/</link><pubDate>Sat, 17 Aug 2019 00:00:00 +0000</pubDate><guid>http://evalevanto.github.io/posts/commandparser/</guid><description>&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/commandparser.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/commandparser.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h4 id="whats-provided"&gt;What&amp;rsquo;s provided:&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;Server access to a directory containing an executable and a flag file.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a target="_blank" rel="noopener noreferrer" href="http://evalevanto.github.io/images/server_view.png"&gt;&lt;img class="img" src="http://evalevanto.github.io/images/server_view.png"
+ alt/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You cannot just &lt;code&gt;cat flag&lt;/code&gt; because &lt;code&gt;r--r----- 1 commandparserctf-pwn root ... flag&lt;/code&gt;
+and of course, your &lt;code&gt;whoami&lt;/code&gt; profile is not in the sudoers list.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;A link to download the executable file.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;This is good. You can dissassemble it later.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id="lets-get-cracking-d"&gt;Let&amp;rsquo;s get cracking :D&lt;/h4&gt;
+&lt;p&gt;Your first step is to run the executable and have a clue of what it does. Notice the file permissions on the commandparser file above &lt;code&gt;-rwsr-xr-x&lt;/code&gt;: the setuid flag &lt;code&gt;s&lt;/code&gt;. This means that the file runs with escalated priviledge, in this case, the root(owner of the file). The program asks for an input that is a command to execute. You put in &lt;code&gt;/bin/cat flag&lt;/code&gt;; perhaps being run in UID root, this might spit back the flag. You get a &lt;code&gt;input not allowed&lt;/code&gt; error instead and the program exits.&lt;/p&gt;</description></item></channel></rss>
