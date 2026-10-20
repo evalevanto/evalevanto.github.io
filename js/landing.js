@@ -56,7 +56,7 @@ const drift = floatsEl.getAnimations({ subtree: true });
 // start every clock far into its loop: rewinding to zero would finish the animation and freeze the prints
 for (const a of drift) a.currentTime += a.effect.getComputedTiming().duration * 2000;
 const hint = document.getElementById("hint");
-let hover = false, push = 0, travel = 0, frozen = false, ticking = false, leaving = false, lastRate = 1;
+let hover = false, push = 0, travelled = 0, frozen = false, ticking = false, lastRate = 1;
 function setRate() {
   const rate = frozen ? 0 : (hover ? 0.3 : 1) + push;
   if (Math.abs(rate - lastRate) < 0.01 && rate !== 0) return;
@@ -67,24 +67,20 @@ function setRate() {
   }
 }
 function tick() {
-  push *= 0.93; travel *= 0.995;
+  push *= 0.93; travelled *= 0.995;
   setRate();
   ticking = Math.abs(push) > 0.01;
   if (ticking) requestAnimationFrame(tick);
 }
 function onScroll(dy) {
-  if (leaving || card.classList.contains("flipped")) return;
+  if (traveling || card.classList.contains("flipped")) return;
   push = Math.max(-8, Math.min(10, push + dy * 0.02));
-  travel = Math.max(0, travel + dy);
+  travelled = Math.max(0, travelled + dy);
   hint.style.opacity = 0;
-  if (travel > 1100) {  // about one deliberate trackpad swipe
-    leaving = true; document.body.classList.add("leaving"); setTimeout(() => location.href = "/stream/", 1300); }
+  if (travelled > 1100) travel("/stream/", "leaving");  // about one deliberate trackpad swipe
   if (!ticking) { ticking = true; requestAnimationFrame(tick); }
 }
-addEventListener("wheel", e => onScroll(e.deltaY), { passive: true });
-let ty = null;
-addEventListener("touchstart", e => ty = e.touches[0].clientY, { passive: true });
-addEventListener("touchmove", e => { onScroll((ty - e.touches[0].clientY) * 2); ty = e.touches[0].clientY; }, { passive: true });
+onScrollIntent(onScroll);
 addEventListener("keydown", e => {
   if (!plainKey(e)) return;
   if (e.key === "l" || e.key === "L") flip();

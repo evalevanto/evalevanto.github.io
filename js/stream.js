@@ -13,19 +13,28 @@ function syncURL() {
   history.replaceState(null, "", "?" + q);
 }
 
+// re-deal: the same table, dealt again with a fade (the first view arrives with the page)
+function redeal() {
+  const root = document.getElementById("stream");
+  root.classList.remove("dealt");
+  render();
+  root.offsetHeight;  // commit the hidden state before fading in
+  requestAnimationFrame(() => root.classList.add("dealt"));
+}
+
 function render() {
   const root = document.getElementById("stream");
   shown = items.filter(p => p.img && (lens === "all" || p.lenses.includes(lens)));
   const bySlug = Object.fromEntries(shown.map(p => [p.slug, p]));
   const { items: placed, height } = layout(shown, seed, root.clientWidth);
-  root.classList.remove("dealt");
   root.replaceChildren();
   root.style.height = height + TOP + 160 + "px";
   for (const it of placed) {
     const p = bySlug[it.slug], m = it.media, t = it.text;
     const img = new Image();
-    Object.assign(img, { src: p.img.src, alt: "", loading: "lazy", decoding: "async", className: "item-media" });
-    img.style.cssText = `left:${m.x}px;top:${TOP + m.y}px;width:${m.w}px;height:${m.h}px;transform:rotate(${m.rot}deg)`;
+    const top = TOP + m.y, near = top - scrollY < innerHeight * 1.5;  // prints near the view load straight away
+    Object.assign(img, { src: p.img.src, alt: "", loading: near ? "eager" : "lazy", fetchPriority: near ? "high" : "auto", decoding: "async", className: "item-media" });
+    img.style.cssText = `left:${m.x}px;top:${top}px;width:${m.w}px;height:${m.h}px;transform:rotate(${m.rot}deg)`;
     const d = document.createElement("div");
     d.className = "item-text";
     d.style.cssText = `left:${t.x}px;top:${TOP + t.y}px;width:${t.w}px;--age:${p.k}`;
@@ -49,7 +58,6 @@ function render() {
   kinOf = new Map(shown.map(p => [p.slug, new Set(shown.filter(q => q !== p && q.rel.some(k => p.rel.includes(k))).map(q => q.slug))]));
   const inLens = new Set(shown.map(p => p.slug));
   for (const t of strip.querySelectorAll(".tick")) t.classList.toggle("out", !inLens.has(t.dataset.slug));
-  requestAnimationFrame(() => root.classList.add("dealt"));
   document.getElementById("seedtag").textContent = `seed “${seed}” · s shuffles · r opens a random print`;
   for (const a of document.querySelectorAll("#lenses a")) a.classList.toggle("on", a.dataset.lens === lens);
   updateHere();
@@ -76,7 +84,7 @@ function buildLenses() {
     a.href = l.key === "all" ? "?" : `?lens=${l.key}`;
     a.dataset.lens = l.key;
     a.textContent = l.label;
-    a.onclick = e => { e.preventDefault(); lens = l.key; syncURL(); render(); scrollTo({ top: 0 }); };
+    a.onclick = e => { e.preventDefault(); lens = l.key; syncURL(); redeal(); scrollTo({ top: 0 }); };
     nav.appendChild(a);
   }
 }
@@ -125,38 +133,34 @@ function updateHere() {
   if (rows.length) here.style.setProperty("--p", pos(nearest(rows, "y", scrollY + innerHeight / 2).t) + "%");
 }
 
-// at the top, keep scrolling up and the stream sinks away: back to the landing
+// at the top, keep scrolling up and the stream sinks away: back to the landing.
+// only a gesture that starts at the top counts, so momentum from scrolling up the stream never does.
 const root = document.getElementById("stream"), uphint = document.getElementById("uphint");
-let pull = 0, returning = false, settle, reachedTop = 0;
-addEventListener("scroll", () => { if (scrollY > 2) reachedTop = null; else reachedTop ??= performance.now(); }, { passive: true });
+let pull = 0, last = 0, fromTop = false, settle;
 function pullUp(dy) {
-  if (returning) return;
-  if (reachedTop === null || performance.now() - reachedTop < 400) return;  // momentum from scrolling up the stream doesn't count
-  if (scrollY > 2) pull = 0;
-  else if (dy < 0) pull += -dy;
+  const now = performance.now();
+  if (now - last > 150) { fromTop = scrollY <= 2; pull = 0; }  // a pause starts a new gesture
+  last = now;
+  if (!fromTop || traveling) return;
+  if (dy < 0) pull += -dy;
   else if (dy > 4) pull = Math.max(0, pull - dy * 2);  // a real move down eases off; trackpad jitter (0, ±1) is ignored
   else return;
   root.style.translate = `0 ${Math.min(pull, 500) * 0.2}px`;
   uphint.style.opacity = pull > 30 ? Math.min(1, pull / 250) * 0.6 : 0;
   clearTimeout(settle);
-  settle = setTimeout(() => { pull = 0; root.style.translate = ""; uphint.style.opacity = 0; }, 700);
+  settle = setTimeout(() => { root.style.translate = ""; uphint.style.opacity = 0; }, 400);
   if (pull > 500) {  // about one gentle trackpad swipe
-    returning = true;
     try { sessionStorage.setItem("from", "stream"); } catch {}
-    document.body.classList.add("returning");
-    setTimeout(() => location.href = "/", 1100);
+    travel("/", "returning");
   }
 }
-addEventListener("wheel", e => pullUp(e.deltaY), { passive: true });
-let ty = null;
-addEventListener("touchstart", e => ty = e.touches[0].clientY, { passive: true });
-addEventListener("touchmove", e => { pullUp((ty - e.touches[0].clientY) * 2); ty = e.touches[0].clientY; }, { passive: true });
+onScrollIntent(pullUp);
 
 buildLenses();
 buildYears();
 render();
 addEventListener("keydown", e => {
   if (!plainKey(e)) return;
-  if (e.key === "s") { seed = Math.random().toString(36).slice(2, 7); syncURL(); render(); }
+  if (e.key === "s") { seed = Math.random().toString(36).slice(2, 7); syncURL(); redeal(); }
   if (e.key === "r") openRandom(shown);
 });

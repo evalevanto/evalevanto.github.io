@@ -16,3 +16,21 @@ function openPost(p) {
 
 const openRandom = list => list.length && openPost(list[Math.floor(Math.random() * list.length)]);
 const plainKey = e => !(e.metaKey || e.ctrlKey || e.altKey);
+
+// leave for another page: the CSS slide (.5s, see .leaving/.returning) plays, then the page changes
+const TRAVEL_MS = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500;
+let traveling = false;
+function travel(url, cls) {
+  if (traveling) return;
+  traveling = true;
+  document.body.classList.add(cls);
+  setTimeout(() => location.href = url, TRAVEL_MS);
+}
+
+// scroll intent from a wheel or a finger, as a vertical delta (positive = down)
+function onScrollIntent(fn) {
+  addEventListener("wheel", e => fn(e.deltaY), { passive: true });
+  let ty = null;
+  addEventListener("touchstart", e => ty = e.touches[0].clientY, { passive: true });
+  addEventListener("touchmove", e => { fn((ty - e.touches[0].clientY) * 2); ty = e.touches[0].clientY; }, { passive: true });
+}
