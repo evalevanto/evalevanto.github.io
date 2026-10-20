@@ -1,282 +1,351 @@
-<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.154.5"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light"><meta name=supported-color-schemes content="light"><title>SHCTF23: Veiled Dimensions&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel=stylesheet><link rel=icon type=image/png sizes=32x32 href=/images/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/images/favicon.ico><link rel=stylesheet href=/css/core.min.365ca8fdb23faa48c9ee0b1db3e557cb91e00aa641c11d9ab3d53d928c8341f94f3cbfc24e510a5ffbed83462148dd0d.css integrity=sha384-Nlyo/bI/qkjJ7gsds+VXy5HgCqZBwR2as9U9koyDQflPPL/CTlEKX/vtg0YhSN0N><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/index>Index</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>SHCTF23: Veiled Dimensions</h1><p class=article-date>2023-09-25</p></section><article class=markdown-body><p><a target=_blank rel="noopener noreferrer" href=/images/veils/00.png><img class=img src=/images/veils/00.png alt=Untitled></a></p><p><strong>Description: Dive deep into the virtual realm and remember, duality hides the truth. Seek where they intertwine, and the solution will emerge.</strong></p><hr><h2 id=unintended-path><strong>Unintended Path</strong></h2><p>Fire up the program in gdb: <code>gdb -q ./dim</code></p><p>Disassemble <code>main</code> . There are 3 calls to <code>puts</code> right before an <code>exit()</code> .You find an interesting one and from <code>objdump -sj .rodata dim</code> , you learn that this is the fail case prompt: “Incorrect key!”.</p><p><a target=_blank rel="noopener noreferrer" href=/images/veils/1.png><img class=img src=/images/veils/1.png alt=Untitled></a></p><p><a target=_blank rel="noopener noreferrer" href=/images/veils/2.png><img class=img src=/images/veils/2.png alt=Untitled></a></p><p>If you set a breakpoint, right before that call, you can inspect the <code>rdx</code> and <code>rax</code> registers to see what was being compared. In this case, the stack reveals a lot more.</p><p><a target=_blank rel="noopener noreferrer" href=/images/veils/3.png><img class=img src=/images/veils/3.png alt=Untitled></a></p><p>And there you have a flag : <code>SHCTF{7r1ck_0r?}</code> … quick but unsatisfactory 😕</p><hr><h2 id=intended-path><strong>Intended Path</strong></h2><p>In a perfect program where the set up is a lot more complex than this and leaks do not show this easily, you load this binary on <code>[ghidra](https://ghidra-sre.org/)</code> for some static disassembly. Here is <a href=#the-program-decompiled-on-ghidra>the decompiled program.</a></p><p>You notice a variable holding 24 bytes being loaded into a location <code>VM_MEMORY + 0x70</code> . You notice a loop through that memory location and a switch case with each byte.</p><p><a target=_blank rel="noopener noreferrer" href=/images/veils/4.png><img class=img src=/images/veils/4.png alt=Untitled></a></p><p>Each case performs some execution logic.</p><p><strong>First crack</strong>: This hints at a basic machine for which the custom instructions are the 24 bytes and the execution logic is the switch case!</p><p>You need to perform a custom disassembly. Understand what each opcode does.</p><p>What we know:</p><ol><li><p>The machine has 10 opcodes numbered <code>0x00</code> → <code>0xa</code>.</p><p>This is a rough deconstruction of each opcode:</p><p><a target=_blank rel="noopener noreferrer" href=/images/veils/5.png><img class=img src=/images/veils/5.png alt=Untitled></a></p></li><li><p>There are two obfuscated strings that are xor’d by <code>0x54</code>.</p></li></ol><p><a target=_blank rel="noopener noreferrer" href=/images/veils/6.png><img class=img src=/images/veils/6.png alt=Untitled></a></p><p><a target=_blank rel="noopener noreferrer" href=/images/veils/7.png><img class=img src=/images/veils/7.png alt=Untitled></a></p><p><a target=_blank rel="noopener noreferrer" href=/images/veils/8.png><img class=img src=/images/veils/8.png alt=Untitled></a></p><p>You deconstruct the vm_instructions to this pseudo-decompilation. <a href=#deconstructpy>See the deconstruct.py</a> in the appendix.</p><p>Running the script, you get “decompiled” code:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-jsx data-lang=jsx><span class=line><span class=cl><span class=nx>mov</span><span class=p>(</span><span class=nx>reg_30</span><span class=p>,</span> <span class=mh>0x10</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_30</span> <span class=o>=</span> <span class=mh>0xfd3a4a2141450b31</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>mov</span><span class=p>(</span><span class=nx>reg_38</span><span class=p>,</span> <span class=mh>0x40</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_38</span> <span class=o>=</span> <span class=mh>0xae720975073e3c43</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>xor</span><span class=p>(</span><span class=nx>reg_30</span><span class=p>,</span> <span class=nx>reg_38</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_30</span> <span class=o>=</span> <span class=mh>0x53484354467b3772</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>load</span><span class=p>(</span><span class=nx>reg_90</span><span class=p>,</span> <span class=nx>reg_30</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_90</span> <span class=o>=</span> <span class=mh>0x53484354467b3772</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>mov</span><span class=p>(</span><span class=nx>reg_30</span><span class=p>,</span> <span class=mh>0x18</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_30</span> <span class=o>=</span> <span class=mh>0x1516151515151515</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>mov</span><span class=p>(</span><span class=nx>reg_38</span><span class=p>,</span> <span class=mh>0x48</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_38</span> <span class=o>=</span> <span class=mh>0x1c4d564a1b5d2a68</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>add</span><span class=p>(</span><span class=nx>reg_30</span><span class=p>,</span> <span class=nx>reg_38</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_30</span> <span class=o>=</span> <span class=mh>0x31636b5f30723f7d</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>load</span><span class=p>(</span><span class=nx>reg_98</span><span class=p>,</span> <span class=nx>reg_30</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_98</span> <span class=o>=</span> <span class=mh>0x31636b5f30723f7d</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>mov</span><span class=p>(</span><span class=nx>reg_30</span><span class=p>,</span> <span class=mh>0x60</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_30</span> <span class=o>=</span> <span class=mh>0x60</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>mov</span><span class=p>(</span><span class=nx>reg_38</span><span class=p>,</span> <span class=nx>reg_90</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_38</span> <span class=o>=</span> <span class=mh>0x53484354467b3772</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>cmp</span><span class=p>(</span><span class=nx>reg_30</span><span class=p>,</span> <span class=nx>reg_38</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_30</span> <span class=o>=</span> <span class=mh>0x60</span>
-</span></span><span class=line><span class=cl><span class=nx>cmp</span><span class=p>(</span><span class=sb>`, SHCTF{7r)
-</span></span></span><span class=line><span class=cl><span class=sb>
-</span></span></span><span class=line><span class=cl><span class=sb>mov(reg_38, reg_90, 8)
-</span></span></span><span class=line><span class=cl><span class=sb> reg_38 = 0x53484354467b3772
-</span></span></span><span class=line><span class=cl><span class=sb>
-</span></span></span><span class=line><span class=cl><span class=sb>cmp(reg_30, reg_38, 8)
-</span></span></span><span class=line><span class=cl><span class=sb> reg_30 = 0x60
-</span></span></span><span class=line><span class=cl><span class=sb>cmp(`</span><span class=p>,</span> <span class=nx>SHCTF</span><span class=p>{</span><span class=mi>7</span><span class=nx>r</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>mov</span><span class=p>(</span><span class=nx>reg_30</span><span class=p>,</span> <span class=mh>0x68</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_30</span> <span class=o>=</span> <span class=mh>0x68</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>mov</span><span class=p>(</span><span class=nx>reg_38</span><span class=p>,</span> <span class=nx>reg_98</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_38</span> <span class=o>=</span> <span class=mh>0x31636b5f30723f7d</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>cmp</span><span class=p>(</span><span class=nx>reg_30</span><span class=p>,</span> <span class=nx>reg_38</span><span class=p>,</span> <span class=mi>8</span><span class=p>)</span>
-</span></span><span class=line><span class=cl> <span class=nx>reg_30</span> <span class=o>=</span> <span class=mh>0x68</span>
-</span></span><span class=line><span class=cl><span class=nx>cmp</span><span class=p>(</span><span class=nx>h</span><span class=p>,</span> <span class=mi>1</span><span class=nx>ck_0r</span><span class=o>?</span><span class=p>})</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=nx>print</span><span class=p>(</span><span class=nx>Correct</span> <span class=nx>key</span><span class=o>!</span><span class=p>)</span>
-</span></span><span class=line><span class=cl><span class=nx>exit</span><span class=p>()</span>
-</span></span></code></pre></div><p>Behold! your key → <code>SHCTF{7r1ck_0r?}</code></p><h2 id=appendix>Appendix</h2><h3 id=the-program-decompiled-on-ghidra>The program decompiled on ghidra.</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-jsx data-lang=jsx><span class=line><span class=cl><span class=nx>undefined8</span> <span class=nx>main</span><span class=p>(</span><span class=k>void</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl>  <span class=nx>size_t</span> <span class=nx>sVar1</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>undefined8</span> <span class=nx>local_98</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>undefined8</span> <span class=nx>local_90</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=kr>char</span> <span class=nx>local_88</span> <span class=p>[</span><span class=mi>32</span><span class=p>];</span>
-</span></span><span class=line><span class=cl>  <span class=nx>undefined8</span> <span class=nx>local_68</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>undefined6</span> <span class=nx>local_60</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>undefined2</span> <span class=nx>uStack_5a</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>undefined6</span> <span class=nx>uStack_58</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=kr>int</span> <span class=nx>local_4c</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=kr>int</span> <span class=nx>local_48</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=kr>int</span> <span class=nx>local_44</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=kr>int</span> <span class=nx>local_40</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=kr>int</span> <span class=nx>local_3c</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>undefined8</span> <span class=o>*</span><span class=nx>local_38</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>undefined1</span> <span class=o>*</span><span class=nx>local_30</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=kr>byte</span> <span class=o>*</span><span class=nx>local_28</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>undefined8</span> <span class=o>*</span><span class=nx>local_20</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=kr>char</span> <span class=o>*</span><span class=nx>local_18</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>ulong</span> <span class=nx>local_10</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  
-</span></span><span class=line><span class=cl>  <span class=nx>puts</span><span class=p>(</span><span class=s2>&#34;                                                 &#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=nx>puts</span><span class=p>(</span><span class=s2>&#34;                     [+]                         &#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=nx>puts</span><span class=p>(</span><span class=s2>&#34;                    /   \\                        &#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=nx>puts</span><span class=p>(</span><span class=s2>&#34;                   /_____\\                       &#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=nx>puts</span><span class=p>(</span><span class=s2>&#34;                  /       \\                      &#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=nx>puts</span><span class=p>(</span><span class=s2>&#34;                 /   [_]   \\                     &#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=nx>puts</span><span class=p>(</span><span class=s2>&#34;                [_______]                        &#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=nx>puts</span><span class=p>(</span><span class=s2>&#34;                                                 &#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=nx>puts</span><span class=p>(</span><span class=s2>&#34;               [Veiled Dimensions]               \n&#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=k>for</span> <span class=p>(</span><span class=nx>local_10</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>local_10</span> <span class=o>&lt;</span> <span class=mh>0x10</span><span class=p>;</span> <span class=nx>local_10</span> <span class=o>=</span> <span class=nx>local_10</span> <span class=o>+</span> <span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=nx>VM_MEMORY</span><span class=p>[</span><span class=nx>local_10</span> <span class=o>+</span> <span class=mh>0x10</span><span class=p>]</span> <span class=o>=</span> <span class=nx>obfuscated_string1</span><span class=p>[</span><span class=nx>local_10</span><span class=p>]</span> <span class=o>^</span> <span class=mh>0x54</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=nx>VM_MEMORY</span><span class=p>[</span><span class=nx>local_10</span> <span class=o>+</span> <span class=mh>0x40</span><span class=p>]</span> <span class=o>=</span> <span class=nx>obfuscated_string2</span><span class=p>[</span><span class=nx>local_10</span><span class=p>]</span> <span class=o>^</span> <span class=mh>0x54</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=p>}</span>
-</span></span><span class=line><span class=cl>  <span class=nx>VM_MEMORY</span><span class=p>[</span><span class=mi>32</span><span class=p>]</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>VM_MEMORY</span><span class=p>[</span><span class=mi>80</span><span class=p>]</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>local_68</span> <span class=o>=</span> <span class=mh>0x1800040240011000</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>local_60</span> <span class=o>=</span> <span class=mh>0x600005034801</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>uStack_5a</span> <span class=o>=</span> <span class=mh>0x806</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>uStack_58</span> <span class=o>=</span> <span class=mh>0xa0908076800</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>printf</span><span class=p>(</span><span class=s2>&#34;Enter the key: &#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=nx>fgets</span><span class=p>(</span><span class=nx>local_88</span><span class=p>,</span><span class=mh>0x12</span><span class=p>,(</span><span class=nx>FILE</span> <span class=o>*</span><span class=p>)</span><span class=nx>stdin</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=nx>sVar1</span> <span class=o>=</span> <span class=nx>strcspn</span><span class=p>(</span><span class=nx>local_88</span><span class=p>,</span><span class=s2>&#34;\n&#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=nx>local_88</span><span class=p>[</span><span class=nx>sVar1</span><span class=p>]</span> <span class=o>=</span> <span class=s1>&#39;\0&#39;</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>local_18</span> <span class=o>=</span> <span class=nx>VM_MEMORY</span> <span class=o>+</span> <span class=mh>0x70</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>local_20</span> <span class=o>=</span> <span class=o>&amp;</span><span class=nx>local_68</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=k>while</span> <span class=p>(</span><span class=o>*</span><span class=p>(</span><span class=kr>char</span> <span class=o>*</span><span class=p>)</span><span class=nx>local_20</span> <span class=o>!=</span> <span class=s1>&#39;\n&#39;</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=nx>local_18</span> <span class=o>=</span> <span class=o>*</span><span class=p>(</span><span class=kr>char</span> <span class=o>*</span><span class=p>)</span><span class=nx>local_20</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=nx>local_20</span> <span class=o>=</span> <span class=p>(</span><span class=nx>undefined8</span> <span class=o>*</span><span class=p>)((</span><span class=kr>long</span><span class=p>)</span><span class=nx>local_20</span> <span class=o>+</span> <span class=mi>1</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=nx>local_18</span> <span class=o>=</span> <span class=nx>local_18</span> <span class=o>+</span> <span class=mi>1</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=p>}</span>
-</span></span><span class=line><span class=cl>  <span class=nx>strncpy</span><span class=p>(</span><span class=nx>VM_MEMORY</span> <span class=o>+</span> <span class=mh>0x60</span><span class=p>,</span><span class=nx>local_88</span><span class=p>,</span><span class=mh>0x10</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>  <span class=nx>local_28</span> <span class=o>=</span> <span class=nx>VM_MEMORY</span> <span class=o>+</span> <span class=mh>0x70</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>local_30</span> <span class=o>=</span> <span class=p>(</span><span class=nx>undefined1</span> <span class=o>*</span><span class=p>)</span><span class=mh>0x0</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>local_38</span> <span class=o>=</span> <span class=p>(</span><span class=nx>undefined8</span> <span class=o>*</span><span class=p>)</span><span class=mh>0x0</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>local_90</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=nx>local_98</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=k>do</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=o>*</span><span class=nx>local_28</span> <span class=o>==</span> <span class=mi>10</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>      <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl>    <span class=nx>printf</span><span class=p>(</span><span class=s2>&#34;%x &#34;</span><span class=p>,(</span><span class=nx>ulong</span><span class=p>)</span><span class=o>*</span><span class=nx>local_28</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=k>switch</span><span class=p>(</span><span class=o>*</span><span class=nx>local_28</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=mi>0</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>      <span class=nx>local_28</span> <span class=o>=</span> <span class=nx>local_28</span> <span class=o>+</span> <span class=mi>1</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>      <span class=nx>local_30</span> <span class=o>=</span> <span class=nx>VM_MEMORY</span> <span class=o>+</span> <span class=o>*</span><span class=nx>local_28</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>      <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=mi>1</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>      <span class=nx>local_28</span> <span class=o>=</span> <span class=nx>local_28</span> <span class=o>+</span> <span class=mi>1</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>      <span class=nx>local_38</span> <span class=o>=</span> <span class=p>(</span><span class=nx>undefined8</span> <span class=o>*</span><span class=p>)(</span><span class=nx>VM_MEMORY</span> <span class=o>+</span> <span class=o>*</span><span class=nx>local_28</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>      <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=mi>3</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>      <span class=k>for</span> <span class=p>(</span><span class=nx>local_48</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>local_48</span> <span class=o>&lt;</span> <span class=mi>8</span><span class=p>;</span> <span class=nx>local_48</span> <span class=o>=</span> <span class=nx>local_48</span> <span class=o>+</span> <span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=nx>local_30</span><span class=p>[</span><span class=nx>local_48</span><span class=p>]</span> <span class=o>=</span> <span class=nx>local_30</span><span class=p>[</span><span class=nx>local_48</span><span class=p>]</span> <span class=o>+</span> <span class=o>*</span><span class=p>(</span><span class=kr>char</span> <span class=o>*</span><span class=p>)((</span><span class=kr>long</span><span class=p>)</span><span class=nx>local_38</span> <span class=o>+</span> <span class=p>(</span><span class=kr>long</span><span class=p>)</span><span class=nx>local_48</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>      <span class=p>}</span>
-</span></span><span class=line><span class=cl>      <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=mi>4</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>      <span class=k>for</span> <span class=p>(</span><span class=nx>local_3c</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>local_3c</span> <span class=o>&lt;</span> <span class=mi>8</span><span class=p>;</span> <span class=nx>local_3c</span> <span class=o>=</span> <span class=nx>local_3c</span> <span class=o>+</span> <span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=nx>local_88</span><span class=p>[(</span><span class=kr>long</span><span class=p>)</span><span class=nx>local_3c</span> <span class=o>+</span> <span class=o>-</span><span class=mi>8</span><span class=p>]</span> <span class=o>=</span> <span class=nx>local_30</span><span class=p>[</span><span class=nx>local_3c</span><span class=p>];</span>
-</span></span><span class=line><span class=cl>      <span class=p>}</span>
-</span></span><span class=line><span class=cl>      <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=mi>5</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>      <span class=k>for</span> <span class=p>(</span><span class=nx>local_40</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>local_40</span> <span class=o>&lt;</span> <span class=mi>8</span><span class=p>;</span> <span class=nx>local_40</span> <span class=o>=</span> <span class=nx>local_40</span> <span class=o>+</span> <span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=o>*</span><span class=p>(</span><span class=nx>undefined1</span> <span class=o>*</span><span class=p>)((</span><span class=kr>long</span><span class=p>)</span><span class=o>&amp;</span><span class=nx>local_98</span> <span class=o>+</span> <span class=p>(</span><span class=kr>long</span><span class=p>)</span><span class=nx>local_40</span><span class=p>)</span> <span class=o>=</span> <span class=nx>local_30</span><span class=p>[</span><span class=nx>local_40</span><span class=p>];</span>
-</span></span><span class=line><span class=cl>      <span class=p>}</span>
-</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=mi>2</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>      <span class=k>for</span> <span class=p>(</span><span class=nx>local_44</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>local_44</span> <span class=o>&lt;</span> <span class=mi>8</span><span class=p>;</span> <span class=nx>local_44</span> <span class=o>=</span> <span class=nx>local_44</span> <span class=o>+</span> <span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=nx>local_30</span><span class=p>[</span><span class=nx>local_44</span><span class=p>]</span> <span class=o>=</span> <span class=nx>local_30</span><span class=p>[</span><span class=nx>local_44</span><span class=p>]</span> <span class=o>^</span> <span class=o>*</span><span class=p>(</span><span class=kr>byte</span> <span class=o>*</span><span class=p>)((</span><span class=kr>long</span><span class=p>)</span><span class=nx>local_38</span> <span class=o>+</span> <span class=p>(</span><span class=kr>long</span><span class=p>)</span><span class=nx>local_44</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>      <span class=p>}</span>
-</span></span><span class=line><span class=cl>      <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=mi>6</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>      <span class=nx>local_38</span> <span class=o>=</span> <span class=o>&amp;</span><span class=nx>local_90</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>      <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=mi>7</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>      <span class=nx>local_38</span> <span class=o>=</span> <span class=o>&amp;</span><span class=nx>local_98</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>      <span class=k>break</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=mi>8</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>      <span class=k>for</span> <span class=p>(</span><span class=nx>local_4c</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>local_4c</span> <span class=o>&lt;</span> <span class=mi>8</span><span class=p>;</span> <span class=nx>local_4c</span> <span class=o>=</span> <span class=nx>local_4c</span> <span class=o>+</span> <span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=nx>local_30</span><span class=p>[</span><span class=nx>local_4c</span><span class=p>]</span> <span class=o>!=</span> <span class=o>*</span><span class=p>(</span><span class=kr>char</span> <span class=o>*</span><span class=p>)((</span><span class=kr>long</span><span class=p>)</span><span class=nx>local_38</span> <span class=o>+</span> <span class=p>(</span><span class=kr>long</span><span class=p>)</span><span class=nx>local_4c</span><span class=p>))</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>          <span class=nx>puts</span><span class=p>(</span><span class=s2>&#34;Incorrect key!&#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>                    <span class=cm>/* WARNING: Subroutine does not return */</span>
-</span></span><span class=line><span class=cl>          <span class=nx>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>        <span class=p>}</span>
-</span></span><span class=line><span class=cl>      <span class=p>}</span>
-</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=mi>9</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>      <span class=nx>puts</span><span class=p>(</span><span class=s2>&#34;Correct key!&#34;</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>                    <span class=cm>/* WARNING: Subroutine does not return */</span>
-</span></span><span class=line><span class=cl>      <span class=nx>exit</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=k>default</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>      <span class=nx>printf</span><span class=p>(</span><span class=s2>&#34;Invalid instruction: %x\n&#34;</span><span class=p>,(</span><span class=nx>ulong</span><span class=p>)</span><span class=o>*</span><span class=nx>local_28</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>                    <span class=cm>/* WARNING: Subroutine does not return */</span>
-</span></span><span class=line><span class=cl>      <span class=nx>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
-</span></span><span class=line><span class=cl>    <span class=p>}</span>
-</span></span><span class=line><span class=cl>    <span class=nx>local_28</span> <span class=o>=</span> <span class=nx>local_28</span> <span class=o>+</span> <span class=mi>1</span><span class=p>;</span>
-</span></span><span class=line><span class=cl>  <span class=p>}</span> <span class=k>while</span><span class=p>(</span> <span class=kc>true</span> <span class=p>);</span>
-</span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><h3 id=deconstructpy>deconstruct.py</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-jsx data-lang=jsx><span class=line><span class=cl><span class=kr>class</span> <span class=nx>VMParser</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>    <span class=nx>def</span> <span class=nx>__init__</span><span class=p>(</span><span class=nx>self</span><span class=p>)</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>        <span class=nx>self</span><span class=p>.</span><span class=nx>vm_rodata</span> <span class=o>=</span> <span class=p>{}</span>
-</span></span><span class=line><span class=cl>        <span class=nx>self</span><span class=p>.</span><span class=nx>registers</span> <span class=o>=</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>            <span class=s2>&#34;reg_30&#34;</span><span class=o>:</span> <span class=mh>0x0</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>            <span class=s2>&#34;reg_38&#34;</span><span class=o>:</span> <span class=mh>0x0</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>            <span class=s2>&#34;reg_90&#34;</span><span class=o>:</span> <span class=mh>0x0</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>            <span class=s2>&#34;reg_98&#34;</span><span class=o>:</span> <span class=mh>0x0</span><span class=p>,</span>
-</span></span><span class=line><span class=cl>        <span class=p>}</span>
-</span></span><span class=line><span class=cl>        <span class=nx>self</span><span class=p>.</span><span class=nx>opcodes</span> <span class=o>=</span> <span class=nx>self</span><span class=p>.</span><span class=nx>_initialize_opcodes</span><span class=p>()</span>
-</span></span><span class=line><span class=cl>    
-</span></span><span class=line><span class=cl>    <span class=err>@</span><span class=nx>staticmethod</span>
-</span></span><span class=line><span class=cl>    <span class=nx>def</span> <span class=nx>reverse_qword_order</span><span class=p>(</span><span class=nx>num</span><span class=p>)</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>        <span class=nx>hex_str</span> <span class=o>=</span> <span class=nx>format</span><span class=p>(</span><span class=nx>num</span><span class=p>,</span> <span class=s1>&#39;016x&#39;</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=s1>&#39;&#39;</span><span class=p>.</span><span class=nx>join</span><span class=p>(</span><span class=nx>reversed</span><span class=p>([</span><span class=nx>hex_str</span><span class=p>[</span><span class=nx>i</span><span class=o>:</span><span class=nx>i</span><span class=o>+</span><span class=mi>2</span><span class=p>]</span> <span class=k>for</span> <span class=nx>i</span> <span class=k>in</span> <span class=nx>range</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span> <span class=nx>len</span><span class=p>(</span><span class=nx>hex_str</span><span class=p>),</span> <span class=mi>2</span><span class=p>)]))</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=nx>def</span> <span class=nx>_initialize_opcodes</span><span class=p>(</span><span class=nx>self</span><span class=p>)</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=p>{</span>
-</span></span><span class=line><span class=cl>            <span class=mh>0x00</span><span class=o>:</span> <span class=p>(</span><span class=s2>&#34;mov: reg_30, 8&#34;</span><span class=p>,</span> <span class=nx>self</span><span class=p>.</span><span class=nx>parse_ops</span><span class=p>),</span>
-</span></span><span class=line><span class=cl>            <span class=mh>0x01</span><span class=o>:</span> <span class=p>(</span><span class=s2>&#34;mov: reg_38, 8&#34;</span><span class=p>,</span> <span class=nx>self</span><span class=p>.</span><span class=nx>parse_ops</span><span class=p>),</span>
-</span></span><span class=line><span class=cl>            <span class=mh>0x02</span><span class=o>:</span> <span class=p>(</span><span class=s2>&#34;xor: reg_30, reg_38, 8&#34;</span><span class=p>,</span> <span class=nx>self</span><span class=p>.</span><span class=nx>parse_ops</span><span class=p>),</span>
-</span></span><span class=line><span class=cl>            <span class=mh>0x03</span><span class=o>:</span> <span class=p>(</span><span class=s2>&#34;add: reg_30, reg_38, 8&#34;</span><span class=p>,</span> <span class=nx>self</span><span class=p>.</span><span class=nx>parse_ops</span><span class=p>),</span>
-</span></span><span class=line><span class=cl>            <span class=mh>0x04</span><span class=o>:</span> <span class=p>(</span><span class=s2>&#34;load: reg_90, reg_30, 8&#34;</span><span class=p>,</span> <span class=nx>self</span><span class=p>.</span><span class=nx>parse_ops</span><span class=p>),</span>
-</span></span><span class=line><span class=cl>            <span class=mh>0x05</span><span class=o>:</span> <span class=p>(</span><span class=s2>&#34;load: reg_98, reg_30, 8&#34;</span><span class=p>,</span> <span class=nx>self</span><span class=p>.</span><span class=nx>parse_ops</span><span class=p>),</span> 
-</span></span><span class=line><span class=cl>            <span class=mh>0x06</span><span class=o>:</span> <span class=p>(</span><span class=s2>&#34;mov: reg_38, reg_90, 8&#34;</span><span class=p>,</span> <span class=nx>self</span><span class=p>.</span><span class=nx>parse_ops</span><span class=p>),</span>
-</span></span><span class=line><span class=cl>            <span class=mh>0x07</span><span class=o>:</span> <span class=p>(</span><span class=s2>&#34;mov: reg_38, reg_98, 8&#34;</span><span class=p>,</span> <span class=nx>self</span><span class=p>.</span><span class=nx>parse_ops</span><span class=p>),</span>
-</span></span><span class=line><span class=cl>            <span class=mh>0x08</span><span class=o>:</span> <span class=p>(</span><span class=s2>&#34;cmp: reg_30, reg_38, 8&#34;</span><span class=p>,</span> <span class=nx>self</span><span class=p>.</span><span class=nx>parse_ops</span><span class=p>),</span>
-</span></span><span class=line><span class=cl>            <span class=mh>0x09</span><span class=o>:</span> <span class=p>(</span><span class=s2>&#34;print(Correct key!)&#34;</span><span class=p>,</span> <span class=nx>None</span><span class=p>),</span>
-</span></span><span class=line><span class=cl>            <span class=mh>0x0a</span><span class=o>:</span> <span class=p>(</span><span class=s2>&#34;exit()&#34;</span><span class=p>,</span> <span class=nx>None</span><span class=p>),</span>
-</span></span><span class=line><span class=cl>        <span class=p>}</span>
-</span></span><span class=line><span class=cl>    
-</span></span><span class=line><span class=cl>    <span class=nx>def</span> <span class=nx>get_addr_value</span><span class=p>(</span><span class=nx>self</span><span class=p>,</span> <span class=nx>instructions</span><span class=p>,</span> <span class=nx>idx</span><span class=p>)</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>        <span class=nx>value</span> <span class=o>=</span> <span class=mi>0</span>
-</span></span><span class=line><span class=cl>        <span class=nx>addr</span> <span class=o>=</span> <span class=kr>int</span><span class=p>(</span><span class=nx>instructions</span><span class=p>[</span><span class=nx>idx</span><span class=o>+</span><span class=mi>2</span><span class=o>:</span> <span class=nx>idx</span><span class=o>+</span><span class=mi>4</span><span class=p>],</span> <span class=mi>16</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>        <span class=k>try</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>            <span class=nx>round_addr</span> <span class=o>=</span> <span class=nx>addr</span> <span class=o>&amp;</span> <span class=mh>0xf0</span>
-</span></span><span class=line><span class=cl>            <span class=nx>offset</span> <span class=o>=</span> <span class=nx>addr</span> <span class=o>-</span> <span class=nx>round_addr</span>
-</span></span><span class=line><span class=cl>            <span class=nx>offset</span> <span class=o>=</span> <span class=mi>16</span> <span class=k>if</span> <span class=nx>offset</span> <span class=o>&gt;</span> <span class=mi>0</span> <span class=k>else</span> <span class=mi>0</span>
-</span></span><span class=line><span class=cl>            <span class=nx>value</span> <span class=o>=</span> <span class=nx>self</span><span class=p>.</span><span class=nx>vm_rodata</span><span class=p>[</span><span class=nx>round_addr</span><span class=p>][</span><span class=nx>offset</span><span class=o>:</span> <span class=nx>offset</span><span class=o>+</span><span class=mi>16</span><span class=p>]</span>
-</span></span><span class=line><span class=cl>            <span class=nx>value</span> <span class=o>=</span> <span class=kr>int</span><span class=p>(</span><span class=nx>value</span><span class=p>,</span> <span class=mi>16</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>        <span class=nx>except</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>            <span class=nx>value</span> <span class=o>=</span> <span class=nx>addr</span>
-</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>hex</span><span class=p>(</span><span class=nx>addr</span><span class=p>),</span> <span class=nx>value</span><span class=p>,</span> <span class=mi>2</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=nx>def</span> <span class=nx>parse_ops</span><span class=p>(</span><span class=nx>self</span><span class=p>,</span> <span class=nx>instructions</span><span class=p>,</span> <span class=nx>idx</span><span class=p>,</span> <span class=nx>descr</span><span class=p>)</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>        <span class=nx>steps</span> <span class=o>=</span> <span class=mi>0</span>
-</span></span><span class=line><span class=cl>        <span class=nx>ops_params</span> <span class=o>=</span> <span class=nx>descr</span><span class=p>.</span><span class=nx>split</span><span class=p>(</span><span class=s1>&#39;: &#39;</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>        <span class=nx>ops</span> <span class=o>=</span> <span class=nx>ops_params</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span>
-</span></span><span class=line><span class=cl>        <span class=nx>params</span> <span class=o>=</span> <span class=nx>ops_params</span><span class=p>[</span><span class=mi>1</span><span class=p>].</span><span class=nx>split</span><span class=p>(</span><span class=s1>&#39;, &#39;</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>        <span class=nx>reg_1</span> <span class=o>=</span> <span class=nx>params</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span>
-</span></span><span class=line><span class=cl>        <span class=nx>reg_2</span> <span class=o>=</span> <span class=nx>params</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span> <span class=k>if</span> <span class=nx>len</span><span class=p>(</span><span class=nx>params</span><span class=p>)</span> <span class=o>==</span> <span class=mi>3</span> <span class=k>else</span> <span class=nx>None</span>
-</span></span><span class=line><span class=cl>        <span class=nx>size</span> <span class=o>=</span> <span class=kr>int</span><span class=p>(</span><span class=nx>params</span><span class=p>[</span><span class=o>-</span><span class=mi>1</span><span class=p>])</span>
-</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>ops</span> <span class=o>==</span> <span class=s2>&#34;xor&#34;</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>            <span class=nx>self</span><span class=p>.</span><span class=nx>registers</span><span class=p>[</span><span class=nx>reg_1</span><span class=p>]</span> <span class=o>=</span> <span class=nx>self</span><span class=p>.</span><span class=nx>registers</span><span class=p>[</span><span class=nx>reg_1</span><span class=p>]</span> <span class=o>^</span> <span class=nx>self</span><span class=p>.</span><span class=nx>registers</span><span class=p>[</span><span class=nx>reg_2</span><span class=p>]</span>
-</span></span><span class=line><span class=cl>        <span class=nx>elif</span> <span class=nx>ops</span> <span class=o>==</span> <span class=s2>&#34;add&#34;</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>            <span class=nx>self</span><span class=p>.</span><span class=nx>registers</span><span class=p>[</span><span class=nx>reg_1</span><span class=p>]</span> <span class=o>=</span> <span class=nx>self</span><span class=p>.</span><span class=nx>registers</span><span class=p>[</span><span class=nx>reg_1</span><span class=p>]</span> <span class=o>+</span> <span class=nx>self</span><span class=p>.</span><span class=nx>registers</span><span class=p>[</span><span class=nx>reg_2</span><span class=p>]</span>
-</span></span><span class=line><span class=cl>        <span class=nx>elif</span> <span class=nx>ops</span> <span class=o>==</span> <span class=s2>&#34;load&#34;</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>            <span class=nx>self</span><span class=p>.</span><span class=nx>registers</span><span class=p>[</span><span class=nx>reg_1</span><span class=p>]</span> <span class=o>=</span> <span class=nx>self</span><span class=p>.</span><span class=nx>registers</span><span class=p>[</span><span class=nx>reg_2</span><span class=p>]</span>
-</span></span><span class=line><span class=cl>        <span class=nx>elif</span> <span class=nx>ops</span> <span class=o>==</span> <span class=s2>&#34;mov&#34;</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>            <span class=k>if</span> <span class=nx>len</span><span class=p>(</span><span class=nx>params</span><span class=p>)</span> <span class=o>==</span> <span class=mi>2</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>            <span class=err>#</span> <span class=nx>get</span> <span class=nx>value</span> <span class=nx>from</span> <span class=nx>address</span> 
-</span></span><span class=line><span class=cl>                <span class=nx>addr</span><span class=p>,</span> <span class=nx>value</span><span class=p>,</span> <span class=nx>steps</span> <span class=o>=</span> <span class=nx>self</span><span class=p>.</span><span class=nx>get_addr_value</span><span class=p>(</span><span class=nx>instructions</span><span class=p>,</span> <span class=nx>idx</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>            <span class=k>else</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>                <span class=nx>value</span> <span class=o>=</span> <span class=nx>self</span><span class=p>.</span><span class=nx>registers</span><span class=p>[</span><span class=nx>reg_2</span><span class=p>]</span>
-</span></span><span class=line><span class=cl>            <span class=nx>self</span><span class=p>.</span><span class=nx>registers</span><span class=p>[</span><span class=nx>reg_1</span><span class=p>]</span> <span class=o>=</span> <span class=nx>value</span>
-</span></span><span class=line><span class=cl>            
-</span></span><span class=line><span class=cl>        <span class=nx>descr</span> <span class=o>=</span> <span class=nx>f</span><span class=s2>&#34;{ops}({reg_1}, {addr if reg_2 is None else reg_2}, {size})\n {reg_1} = {hex(self.registers[reg_1])}\n&#34;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>ops</span> <span class=o>==</span> <span class=s2>&#34;cmp&#34;</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>            <span class=err>#</span> <span class=kr>int</span> <span class=nx>to</span> <span class=nx>ascii</span>
-</span></span><span class=line><span class=cl>            <span class=nx>reg_1</span> <span class=o>=</span> <span class=nx>format</span><span class=p>(</span><span class=nx>self</span><span class=p>.</span><span class=nx>registers</span><span class=p>[</span><span class=nx>reg_1</span><span class=p>],</span> <span class=s1>&#39;x&#39;</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>            <span class=nx>reg_1</span> <span class=o>=</span> <span class=nx>bytes</span><span class=p>.</span><span class=nx>fromhex</span><span class=p>(</span><span class=nx>reg_1</span><span class=p>).</span><span class=nx>decode</span><span class=p>(</span><span class=s2>&#34;ascii&#34;</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>            <span class=nx>reg_2</span> <span class=o>=</span> <span class=nx>format</span><span class=p>(</span><span class=nx>self</span><span class=p>.</span><span class=nx>registers</span><span class=p>[</span><span class=nx>reg_2</span><span class=p>],</span> <span class=s1>&#39;x&#39;</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>            <span class=nx>reg_2</span> <span class=o>=</span> <span class=nx>bytes</span><span class=p>.</span><span class=nx>fromhex</span><span class=p>(</span><span class=nx>reg_2</span><span class=p>).</span><span class=nx>decode</span><span class=p>(</span><span class=s2>&#34;ascii&#34;</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>            <span class=nx>descr</span> <span class=o>+=</span> <span class=nx>f</span><span class=s2>&#34;cmp({reg_1}, {reg_2})\n&#34;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>descr</span><span class=p>,</span> <span class=nx>steps</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=nx>def</span> <span class=nx>execute</span><span class=p>(</span><span class=nx>self</span><span class=p>,</span> <span class=nx>instructions</span><span class=p>)</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>        <span class=nx>i</span> <span class=o>=</span> <span class=mi>0</span>
-</span></span><span class=line><span class=cl>        <span class=k>while</span> <span class=nx>i</span> <span class=o>&lt;</span> <span class=nx>len</span><span class=p>(</span><span class=nx>instructions</span><span class=p>)</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>            <span class=nx>descr</span> <span class=o>=</span> <span class=s2>&#34;&#34;</span>
-</span></span><span class=line><span class=cl>            <span class=nx>inst</span> <span class=o>=</span> <span class=kr>int</span><span class=p>(</span><span class=nx>instructions</span><span class=p>[</span><span class=nx>i</span><span class=o>:</span> <span class=nx>i</span><span class=o>+</span><span class=mi>2</span><span class=p>],</span> <span class=mi>16</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>            <span class=k>if</span> <span class=nx>inst</span> <span class=k>in</span> <span class=nx>self</span><span class=p>.</span><span class=nx>opcodes</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>                <span class=nx>descr</span> <span class=o>+=</span> <span class=nx>self</span><span class=p>.</span><span class=nx>opcodes</span><span class=p>[</span><span class=nx>inst</span><span class=p>][</span><span class=mi>0</span><span class=p>]</span>
-</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>self</span><span class=p>.</span><span class=nx>opcodes</span><span class=p>[</span><span class=nx>inst</span><span class=p>][</span><span class=mi>1</span><span class=p>]</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>                    <span class=nx>descr</span><span class=p>,</span> <span class=nx>skips</span> <span class=o>=</span> <span class=nx>self</span><span class=p>.</span><span class=nx>opcodes</span><span class=p>[</span><span class=nx>inst</span><span class=p>][</span><span class=mi>1</span><span class=p>](</span><span class=nx>instructions</span><span class=p>,</span> <span class=nx>i</span><span class=p>,</span> <span class=nx>descr</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>                    <span class=nx>i</span> <span class=o>+=</span> <span class=nx>skips</span>
-</span></span><span class=line><span class=cl>            <span class=k>else</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>                <span class=nx>descr</span> <span class=o>+=</span> <span class=nx>f</span><span class=s2>&#34;Unknown instruction: {hex(inst)}&#34;</span>
-</span></span><span class=line><span class=cl>            <span class=nx>print</span><span class=p>(</span><span class=nx>descr</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>            <span class=nx>i</span> <span class=o>=</span> <span class=nx>i</span><span class=o>+</span> <span class=mi>2</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=nx>def</span> <span class=nx>load_instructions</span><span class=p>(</span><span class=nx>self</span><span class=p>,</span> <span class=nx>vm_instructions</span><span class=p>)</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>        <span class=nx>rev_instr</span> <span class=o>=</span> <span class=s1>&#39;&#39;</span><span class=p>.</span><span class=nx>join</span><span class=p>([</span><span class=nx>self</span><span class=p>.</span><span class=nx>reverse_qword_order</span><span class=p>(</span><span class=nx>x</span><span class=p>)</span> <span class=k>for</span> <span class=nx>x</span> <span class=k>in</span> <span class=nx>vm_instructions</span><span class=p>])</span>
-</span></span><span class=line><span class=cl>        <span class=nx>self</span><span class=p>.</span><span class=nx>vm_rodata</span><span class=p>[</span><span class=mh>0x70</span><span class=p>]</span> <span class=o>=</span> <span class=nx>rev_instr</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=nx>def</span> <span class=nx>load_obfuscated_strings</span><span class=p>(</span><span class=nx>self</span><span class=p>,</span> <span class=nx>obfuscated_string</span><span class=p>,</span> <span class=nx>address</span><span class=p>,</span> <span class=nx>key</span><span class=o>=</span><span class=mh>0x5454545454545454</span><span class=p>)</span><span class=o>:</span>
-</span></span><span class=line><span class=cl>        <span class=nx>processed_string</span> <span class=o>=</span> <span class=p>[</span><span class=nx>self</span><span class=p>.</span><span class=nx>reverse_qword_order</span><span class=p>(</span><span class=nx>x</span> <span class=o>^</span> <span class=nx>key</span><span class=p>)</span> <span class=k>for</span> <span class=nx>x</span> <span class=k>in</span> <span class=nx>obfuscated_string</span><span class=p>]</span>
-</span></span><span class=line><span class=cl>        <span class=nx>self</span><span class=p>.</span><span class=nx>vm_rodata</span><span class=p>[</span><span class=nx>address</span><span class=p>]</span> <span class=o>=</span> <span class=s1>&#39;&#39;</span><span class=p>.</span><span class=nx>join</span><span class=p>(</span><span class=nx>processed_string</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=err>#</span> <span class=nx>Example</span> <span class=nx>usage</span>
-</span></span><span class=line><span class=cl><span class=nx>parser</span> <span class=o>=</span> <span class=nx>VMParser</span><span class=p>()</span>
-</span></span><span class=line><span class=cl><span class=nx>parser</span><span class=p>.</span><span class=nx>load_instructions</span><span class=p>([</span><span class=mh>0x1800040240011000</span><span class=p>,</span> <span class=mh>0x0806600005034801</span><span class=p>,</span> <span class=mh>0x0a09080768000806</span><span class=p>])</span>
-</span></span><span class=line><span class=cl><span class=nx>parser</span><span class=p>.</span><span class=nx>load_obfuscated_strings</span><span class=p>([</span><span class=mh>0x655F1115751E6EA9</span><span class=p>,</span> <span class=mh>0x4141414141414241</span><span class=p>],</span> <span class=mh>0x10</span><span class=p>)</span>
-</span></span><span class=line><span class=cl><span class=nx>parser</span><span class=p>.</span><span class=nx>load_obfuscated_strings</span><span class=p>([</span><span class=mh>0x17686A53215D26FA</span><span class=p>,</span> <span class=mh>0x3C7E094F1E021948</span><span class=p>],</span> <span class=mh>0x40</span><span class=p>)</span>
-</span></span><span class=line><span class=cl><span class=nx>parser</span><span class=p>.</span><span class=nx>execute</span><span class=p>(</span><span class=nx>parser</span><span class=p>.</span><span class=nx>vm_rodata</span><span class=p>[</span><span class=mh>0x70</span><span class=p>])</span>
-</span></span></code></pre></div></article><section class=article-labels><a class="article-category li" href=/categories/ctf-writeups/><span class=hashtag>#</span>CTF WriteUps</a><a class="article-tag li" href=/tags/shctf/><span class=hashtag>#</span>shctf</a><a class="article-tag li" href=/tags/vm-based-obfuscation/><span class=hashtag>#</span>vm-based obfuscation</a></section><section class=article-navigation><p><a class=link href=/posts/snotes/><span class=li></span>SHCTF23: SecureNotes3</a></p><p><a class=link href=/posts/case_08/><span class=li></span>Case 08 → Caught a Runner’s High 😶‍🌫️</a></p></section></div><section id=footer class="footer max-body-width"><p>© 2026 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script></div></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SHCTF23: Veiled Dimensions · Levanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono&family=Fraunces:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="Levanto" href="/index.xml">
+</head>
+<body class="page-post" style="--age:0.41">
+<header class="topbar">
+  <a class="avatar" href="/" aria-label="home"><img class="face" src="/img/cat-face.webp" alt="the cat"><img class="wave" src="/img/cat-wave.webp" alt=""></a>
+  <nav><a href="/stream/">stream</a><a href="/#back">about</a></nav>
+</header>
+<article class="post">
+  <div class="post-head"><img class="print" src="/media/prints/veiled_dimensions.webp" alt="">
+    <div><span class="mono">S.30</span><h1>SHCTF23: Veiled Dimensions</h1><p class="sub">A writeup for the Veiled Dimensions challenge from SHCTF 2023</p><span class="mono">25 Sep 2023 · write-up · shctf · vm-based obfuscation</span></div>
+  </div>
+  <div class="post-body "><p><img src="/media/posts/veils/00.webp" alt="Untitled" width="887" height="377" loading="lazy" decoding="async"></p>
+<p><strong>Description: Dive deep into the virtual realm and remember, duality hides the truth. Seek where they intertwine, and the solution will emerge.</strong></p>
+<hr />
+<h2><strong>Unintended Path</strong></h2>
+<p>Fire up the program in gdb: <code>gdb -q ./dim</code></p>
+<p>Disassemble <code>main</code> . There are 3 calls to <code>puts</code> right before an <code>exit()</code> .You find an interesting one and from <code>objdump -sj .rodata dim</code> , you learn that this is the fail case prompt: “Incorrect key!”.</p>
+<p><img src="/media/posts/veils/1.webp" alt="Untitled" width="840" height="728" loading="lazy" decoding="async"></p>
+<p><img src="/media/posts/veils/2.webp" alt="Untitled" width="728" height="444" loading="lazy" decoding="async"></p>
+<p>If you set a breakpoint, right before that call, you can inspect the <code>rdx</code>  and <code>rax</code> registers to see what was being compared. In this case, the stack reveals a lot more.</p>
+<p><img src="/media/posts/veils/3.webp" alt="Untitled" width="908" height="793" loading="lazy" decoding="async"></p>
+<p>And there you have a flag : <code>SHCTF{7r1ck_0r?}</code> … quick but unsatisfactory 😕</p>
+<hr />
+<h2><strong>Intended Path</strong></h2>
+<p>In a perfect program where the set up is a lot more complex than this and leaks do not show this easily, you load this binary on <code>[ghidra](https://ghidra-sre.org/)</code> for some static disassembly. Here is <a href="#the-program-decompiled-on-ghidra">the decompiled program.</a></p>
+<p>You notice a variable holding 24 bytes being loaded into a location <code>VM_MEMORY + 0x70</code> . You notice a loop through that memory location and a switch case with each byte. </p>
+<p><img src="/media/posts/veils/4.webp" alt="Untitled" width="635" height="652" loading="lazy" decoding="async"></p>
+<p>Each case performs some execution logic.</p>
+<p><strong>First crack</strong>: This hints at a basic machine for which the custom instructions are the 24 bytes and the execution logic is the switch case!</p>
+<p>You need to perform a custom disassembly. Understand what each opcode does.</p>
+<p>What we know:</p>
+<ol>
+<li>
+<p>The machine has 10 opcodes numbered <code>0x00</code> → <code>0xa</code>.</p>
+<p>This is a rough deconstruction of each opcode:</p>
+<p><img src="/media/posts/veils/5.webp" alt="Untitled" width="975" height="390" loading="lazy" decoding="async"></p>
+</li>
+<li>
+<p>There are two obfuscated strings that are xor’d by <code>0x54</code>.</p>
+</li>
+</ol>
+<p><img src="/media/posts/veils/6.webp" alt="Untitled" width="441" height="281" loading="lazy" decoding="async"></p>
+<p><img src="/media/posts/veils/7.webp" alt="Untitled" width="564" height="74" loading="lazy" decoding="async"></p>
+<p><img src="/media/posts/veils/8.webp" alt="Untitled" width="791" height="189" loading="lazy" decoding="async"></p>
+<p>You deconstruct the vm_instructions to this pseudo-decompilation. <a href="#deconstructpy">See the deconstruct.py</a>  in the appendix.</p>
+<p>Running the script, you get “decompiled” code:</p>
+<pre><code class="language-jsx">mov(reg_30, 0x10, 8)
+ reg_30 = 0xfd3a4a2141450b31
+
+mov(reg_38, 0x40, 8)
+ reg_38 = 0xae720975073e3c43
+
+xor(reg_30, reg_38, 8)
+ reg_30 = 0x53484354467b3772
+
+load(reg_90, reg_30, 8)
+ reg_90 = 0x53484354467b3772
+
+mov(reg_30, 0x18, 8)
+ reg_30 = 0x1516151515151515
+
+mov(reg_38, 0x48, 8)
+ reg_38 = 0x1c4d564a1b5d2a68
+
+add(reg_30, reg_38, 8)
+ reg_30 = 0x31636b5f30723f7d
+
+load(reg_98, reg_30, 8)
+ reg_98 = 0x31636b5f30723f7d
+
+mov(reg_30, 0x60, 8)
+ reg_30 = 0x60
+
+mov(reg_38, reg_90, 8)
+ reg_38 = 0x53484354467b3772
+
+cmp(reg_30, reg_38, 8)
+ reg_30 = 0x60
+cmp(`, SHCTF{7r)
+
+mov(reg_38, reg_90, 8)
+ reg_38 = 0x53484354467b3772
+
+cmp(reg_30, reg_38, 8)
+ reg_30 = 0x60
+cmp(`, SHCTF{7r)
+
+mov(reg_30, 0x68, 8)
+ reg_30 = 0x68
+
+mov(reg_38, reg_98, 8)
+ reg_38 = 0x31636b5f30723f7d
+
+cmp(reg_30, reg_38, 8)
+ reg_30 = 0x68
+cmp(h, 1ck_0r?})
+
+print(Correct key!)
+exit()
+</code></pre>
+<p>Behold! your key → <code>SHCTF{7r1ck_0r?}</code></p>
+<h2>Appendix</h2>
+<h3>The program decompiled on ghidra.</h3>
+<pre><code class="language-jsx">undefined8 main(void)
+
+{
+  size_t sVar1;
+  undefined8 local_98;
+  undefined8 local_90;
+  char local_88 [32];
+  undefined8 local_68;
+  undefined6 local_60;
+  undefined2 uStack_5a;
+  undefined6 uStack_58;
+  int local_4c;
+  int local_48;
+  int local_44;
+  int local_40;
+  int local_3c;
+  undefined8 *local_38;
+  undefined1 *local_30;
+  byte *local_28;
+  undefined8 *local_20;
+  char *local_18;
+  ulong local_10;
+
+  puts(&quot;                                                 &quot;);
+  puts(&quot;                     [+]                         &quot;);
+  puts(&quot;                    /   \\                        &quot;);
+  puts(&quot;                   /_____\\                       &quot;);
+  puts(&quot;                  /       \\                      &quot;);
+  puts(&quot;                 /   [_]   \\                     &quot;);
+  puts(&quot;                [_______]                        &quot;);
+  puts(&quot;                                                 &quot;);
+  puts(&quot;               [Veiled Dimensions]               \n&quot;);
+  for (local_10 = 0; local_10 &lt; 0x10; local_10 = local_10 + 1) {
+    VM_MEMORY[local_10 + 0x10] = obfuscated_string1[local_10] ^ 0x54;
+    VM_MEMORY[local_10 + 0x40] = obfuscated_string2[local_10] ^ 0x54;
+  }
+  VM_MEMORY[32] = 0;
+  VM_MEMORY[80] = 0;
+  local_68 = 0x1800040240011000;
+  local_60 = 0x600005034801;
+  uStack_5a = 0x806;
+  uStack_58 = 0xa0908076800;
+  printf(&quot;Enter the key: &quot;);
+  fgets(local_88,0x12,(FILE *)stdin);
+  sVar1 = strcspn(local_88,&quot;\n&quot;);
+  local_88[sVar1] = '\0';
+  local_18 = VM_MEMORY + 0x70;
+  local_20 = &amp;local_68;
+  while (*(char *)local_20 != '\n') {
+    *local_18 = *(char *)local_20;
+    local_20 = (undefined8 *)((long)local_20 + 1);
+    local_18 = local_18 + 1;
+  }
+  strncpy(VM_MEMORY + 0x60,local_88,0x10);
+  local_28 = VM_MEMORY + 0x70;
+  local_30 = (undefined1 *)0x0;
+  local_38 = (undefined8 *)0x0;
+  local_90 = 0;
+  local_98 = 0;
+  do {
+    if (*local_28 == 10) {
+      return 0;
+    }
+    printf(&quot;%x &quot;,(ulong)*local_28);
+    switch(*local_28) {
+    case 0:
+      local_28 = local_28 + 1;
+      local_30 = VM_MEMORY + *local_28;
+      break;
+    case 1:
+      local_28 = local_28 + 1;
+      local_38 = (undefined8 *)(VM_MEMORY + *local_28);
+      break;
+    case 3:
+      for (local_48 = 0; local_48 &lt; 8; local_48 = local_48 + 1) {
+        local_30[local_48] = local_30[local_48] + *(char *)((long)local_38 + (long)local_48);
+      }
+      break;
+    case 4:
+      for (local_3c = 0; local_3c &lt; 8; local_3c = local_3c + 1) {
+        local_88[(long)local_3c + -8] = local_30[local_3c];
+      }
+      break;
+    case 5:
+      for (local_40 = 0; local_40 &lt; 8; local_40 = local_40 + 1) {
+        *(undefined1 *)((long)&amp;local_98 + (long)local_40) = local_30[local_40];
+      }
+    case 2:
+      for (local_44 = 0; local_44 &lt; 8; local_44 = local_44 + 1) {
+        local_30[local_44] = local_30[local_44] ^ *(byte *)((long)local_38 + (long)local_44);
+      }
+      break;
+    case 6:
+      local_38 = &amp;local_90;
+      break;
+    case 7:
+      local_38 = &amp;local_98;
+      break;
+    case 8:
+      for (local_4c = 0; local_4c &lt; 8; local_4c = local_4c + 1) {
+        if (local_30[local_4c] != *(char *)((long)local_38 + (long)local_4c)) {
+          puts(&quot;Incorrect key!&quot;);
+                    /* WARNING: Subroutine does not return */
+          exit(1);
+        }
+      }
+    case 9:
+      puts(&quot;Correct key!&quot;);
+                    /* WARNING: Subroutine does not return */
+      exit(0);
+    default:
+      printf(&quot;Invalid instruction: %x\n&quot;,(ulong)*local_28);
+                    /* WARNING: Subroutine does not return */
+      exit(1);
+    }
+    local_28 = local_28 + 1;
+  } while( true );
+}
+</code></pre>
+<h3>deconstruct.py</h3>
+<pre><code class="language-jsx">class VMParser:
+    def __init__(self):
+        self.vm_rodata = {}
+        self.registers = {
+            &quot;reg_30&quot;: 0x0,
+            &quot;reg_38&quot;: 0x0,
+            &quot;reg_90&quot;: 0x0,
+            &quot;reg_98&quot;: 0x0,
+        }
+        self.opcodes = self._initialize_opcodes()
+
+    @staticmethod
+    def reverse_qword_order(num):
+        hex_str = format(num, '016x')
+        return ''.join(reversed([hex_str[i:i+2] for i in range(0, len(hex_str), 2)]))
+
+    def _initialize_opcodes(self):
+        return {
+            0x00: (&quot;mov: reg_30, 8&quot;, self.parse_ops),
+            0x01: (&quot;mov: reg_38, 8&quot;, self.parse_ops),
+            0x02: (&quot;xor: reg_30, reg_38, 8&quot;, self.parse_ops),
+            0x03: (&quot;add: reg_30, reg_38, 8&quot;, self.parse_ops),
+            0x04: (&quot;load: reg_90, reg_30, 8&quot;, self.parse_ops),
+            0x05: (&quot;load: reg_98, reg_30, 8&quot;, self.parse_ops), 
+            0x06: (&quot;mov: reg_38, reg_90, 8&quot;, self.parse_ops),
+            0x07: (&quot;mov: reg_38, reg_98, 8&quot;, self.parse_ops),
+            0x08: (&quot;cmp: reg_30, reg_38, 8&quot;, self.parse_ops),
+            0x09: (&quot;print(Correct key!)&quot;, None),
+            0x0a: (&quot;exit()&quot;, None),
+        }
+
+    def get_addr_value(self, instructions, idx):
+        value = 0
+        addr = int(instructions[idx+2: idx+4], 16)
+        try:
+            round_addr = addr &amp; 0xf0
+            offset = addr - round_addr
+            offset = 16 if offset &gt; 0 else 0
+            value = self.vm_rodata[round_addr][offset: offset+16]
+            value = int(value, 16)
+        except:
+            value = addr
+        return hex(addr), value, 2
+
+    def parse_ops(self, instructions, idx, descr):
+        steps = 0
+        ops_params = descr.split(': ')
+        ops = ops_params[0]
+        params = ops_params[1].split(', ')
+
+        reg_1 = params[0]
+        reg_2 = params[1] if len(params) == 3 else None
+        size = int(params[-1])
+        if ops == &quot;xor&quot;:
+            self.registers[reg_1] = self.registers[reg_1] ^ self.registers[reg_2]
+        elif ops == &quot;add&quot;:
+            self.registers[reg_1] = self.registers[reg_1] + self.registers[reg_2]
+        elif ops == &quot;load&quot;:
+            self.registers[reg_1] = self.registers[reg_2]
+        elif ops == &quot;mov&quot;:
+            if len(params) == 2:
+            # get value from address 
+                addr, value, steps = self.get_addr_value(instructions, idx)
+            else:
+                value = self.registers[reg_2]
+            self.registers[reg_1] = value
+
+        descr = f&quot;{ops}({reg_1}, {addr if reg_2 is None else reg_2}, {size})\n {reg_1} = {hex(self.registers[reg_1])}\n&quot;
+
+        if ops == &quot;cmp&quot;:
+            # int to ascii
+            reg_1 = format(self.registers[reg_1], 'x')
+            reg_1 = bytes.fromhex(reg_1).decode(&quot;ascii&quot;)
+
+            reg_2 = format(self.registers[reg_2], 'x')
+            reg_2 = bytes.fromhex(reg_2).decode(&quot;ascii&quot;)
+
+            descr += f&quot;cmp({reg_1}, {reg_2})\n&quot;
+
+        return descr, steps
+
+    def execute(self, instructions):
+        i = 0
+        while i &lt; len(instructions):
+            descr = &quot;&quot;
+            inst = int(instructions[i: i+2], 16)
+            if inst in self.opcodes:
+                descr += self.opcodes[inst][0]
+                if self.opcodes[inst][1]:
+                    descr, skips = self.opcodes[inst][1](instructions, i, descr)
+                    i += skips
+            else:
+                descr += f&quot;Unknown instruction: {hex(inst)}&quot;
+            print(descr)
+            i = i+ 2
+
+    def load_instructions(self, vm_instructions):
+        rev_instr = ''.join([self.reverse_qword_order(x) for x in vm_instructions])
+        self.vm_rodata[0x70] = rev_instr
+
+    def load_obfuscated_strings(self, obfuscated_string, address, key=0x5454545454545454):
+        processed_string = [self.reverse_qword_order(x ^ key) for x in obfuscated_string]
+        self.vm_rodata[address] = ''.join(processed_string)
+
+# Example usage
+parser = VMParser()
+parser.load_instructions([0x1800040240011000, 0x0806600005034801, 0x0a09080768000806])
+parser.load_obfuscated_strings([0x655F1115751E6EA9, 0x4141414141414241], 0x10)
+parser.load_obfuscated_strings([0x17686A53215D26FA, 0x3C7E094F1E021948], 0x40)
+parser.execute(parser.vm_rodata[0x70])
+</code></pre></div>
+  <footer class="post-end"><p class="mono"><a href="/stream/?lens=ctf">one of 6 in CTF ↗</a></p><p class="mono"><a href="/posts/snotes/">← S.29 SHCTF23: SecureNotes3</a> &nbsp;·&nbsp; <a href="/posts/case_09/">S.31 Case 09 → Taken ☎️ →</a></p></footer>
+</article>
+<div class="grain"></div>
+<script src="/js/common.js"></script>
+
+</body>
+</html>

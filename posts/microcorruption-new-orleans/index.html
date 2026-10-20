@@ -1,14 +1,73 @@
-<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.154.5"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light"><meta name=supported-color-schemes content="light"><title>MicroCorruption: New Orleans&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel=stylesheet><link rel=icon type=image/png sizes=32x32 href=/images/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/images/favicon.ico><link rel=stylesheet href=/css/core.min.365ca8fdb23faa48c9ee0b1db3e557cb91e00aa641c11d9ab3d53d928c8341f94f3cbfc24e510a5ffbed83462148dd0d.css integrity=sha384-Nlyo/bI/qkjJ7gsds+VXy5HgCqZBwR2as9U9koyDQflPPL/CTlEKX/vtg0YhSN0N><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/index>Index</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>MicroCorruption: New Orleans</h1><p class=article-date>2020-08-26</p></section><article class=markdown-body><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/New-Orleans.jpg><img class=img src=/images/microcorruption/New-Orleans.jpg alt></a></p><p>You find a manual for the LockIT Pro Lock:</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/New-Orleans-details.png><img class=img src=/images/microcorruption/New-Orleans-details.png alt></a></p><p>You learn some things from the manual:</p><ul><li>It is <strong>not attached</strong> to a HSM module.</li><li>Password set by entering it on the app restarting the lock.</li></ul><p>You are presented with a live debugger, a live memory dump, a disassembler and a view of the register states.</p><p>Looking through the main you notice a <code>create_password</code> function that gets called before the input is required or a check for correct input is done.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/New-Orleans-main.png><img class=img src=/images/microcorruption/New-Orleans-main.png alt></a></p><p>You do a quick run of the program with a dummy input <code>test</code> to follow through the flow.
-This is how the <code>create_password</code> is like:</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/New-Orleans-create-password.png><img class=img src=/images/microcorruption/New-Orleans-create-password.png alt></a></p><p>A password is clearly generated and stored at address <code>0x2400</code>. The input you put in is stored at address <code>0x439c</code></p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/New-Orleans-created-password.png><img class=img src=/images/microcorruption/New-Orleans-created-password.png alt></a></p><p>So, flowing back through <code>main</code>, <code>create_password</code> generates and stores a password at <code>0x2400</code> -> <code>get_password</code> scans and stores user input at <code>0x439c</code> -> then next instruction calls <code>check_password</code>.</p><p>Already there&rsquo;s a hunch that the created password is what is compared to your input&mldr; but you want to see it. :)</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/New-Orleans-analyse-cmp.png><img class=img src=/images/microcorruption/New-Orleans-analyse-cmp.png alt></a></p><p>In the <code>check_password</code> function:</p><ul><li>A <code>cmp.b</code> instruction is called for each byte of the input(<code>r13</code> points to the input) and the created password.</li></ul><p>In pseudocode:</p><pre tabindex=0><code>r14 = 0
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MicroCorruption: New Orleans · Levanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono&family=Fraunces:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="Levanto" href="/index.xml">
+</head>
+<body class="page-post" style="--age:1">
+<header class="topbar">
+  <a class="avatar" href="/" aria-label="home"><img class="face" src="/img/cat-face.webp" alt="the cat"><img class="wave" src="/img/cat-wave.webp" alt=""></a>
+  <nav><a href="/stream/">stream</a><a href="/#back">about</a></nav>
+</header>
+<article class="post">
+  <div class="post-head"><img class="print" src="/media/prints/microcorruption-new-orleans.webp" alt="">
+    <div><span class="mono">S.5</span><h1>MicroCorruption: New Orleans</h1><p class="sub">This is the first destination you get to explore.</p><span class="mono">26 Aug 2020 · write-up · input check</span></div>
+  </div>
+  <div class="post-body "><p><img src="/media/posts/microcorruption/New-Orleans.webp" alt="" width="900" height="600" loading="lazy" decoding="async"></p>
+<p>You find a manual for the LockIT Pro Lock:</p>
+<p><img src="/media/posts/microcorruption/New-Orleans-details.webp" alt="" width="668" height="791" loading="lazy" decoding="async"></p>
+<p>You learn some things from the manual:
+ * It is <strong>not attached</strong> to a HSM module.
+ * Password set by entering it on the app restarting the lock.</p>
+<p>You are presented with a live debugger, a live memory dump, a disassembler and a view of the register states.</p>
+<p>Looking through the main you notice a <code>create_password</code> function that gets called before the input is required or a check for correct input is done.</p>
+<p><img src="/media/posts/microcorruption/New-Orleans-main.webp" alt="" width="781" height="436" loading="lazy" decoding="async"> </p>
+<p>You do a quick run of the program with a dummy input <code>test</code> to follow through the flow.
+This is how the <code>create_password</code> is like: </p>
+<p><img src="/media/posts/microcorruption/New-Orleans-create-password.webp" alt="" width="576" height="299" loading="lazy" decoding="async"></p>
+<p>A password is clearly generated and stored at address <code>0x2400</code>. The input you put in is stored at address <code>0x439c</code></p>
+<p><img src="/media/posts/microcorruption/New-Orleans-created-password.webp" alt="" width="915" height="350" loading="lazy" decoding="async"></p>
+<p>So, flowing back through <code>main</code>, <code>create_password</code> generates and stores a password at <code>0x2400</code> -&gt; <code>get_password</code> scans and stores user input at <code>0x439c</code> -&gt; then next instruction calls <code>check_password</code>.</p>
+<p>Already there's a hunch that the created password is what is compared to your input... but you want to see it. :)</p>
+<p><img src="/media/posts/microcorruption/New-Orleans-analyse-cmp.webp" alt="" width="1280" height="743" loading="lazy" decoding="async"></p>
+<p>In the <code>check_password</code> function:</p>
+<ul>
+<li>A <code>cmp.b</code> instruction is called for each byte of the input(<code>r13</code> points to the input) and the created password.</li>
+</ul>
+<p>In pseudocode:</p>
+<pre><code>r14 = 0
 r13 = 0x439c
 for r14 != 8{
-	r13 += r14
-	if *r13 != *(0x2400 + r14){
-		r15 = 0
-		return
-	}
-	r14++
+    r13 += r14
+    if *r13 != *(0x2400 + r14){
+        r15 = 0
+        return
+    }
+    r14++
 }
 r15 = 1
 return
-</code></pre><blockquote><p>Keep comparing the byte of the input at index(r14) to the byte of the created password at index(r14). If they are not equal, clear r15(becomes zero) and return. If they are equal, repeat for each byte until 8(this is the required length of the password). Set r15 to 1 and return.</p></blockquote><p>Falling back to <code>main</code>, only if <code>r15</code> is not zero does the door unlock.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/New-Orleans-test.png><img class=img src=/images/microcorruption/New-Orleans-test.png alt></a></p><p>You now put in the correct input: the created password:</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/New-Orleans-correct-input.png><img class=img src=/images/microcorruption/New-Orleans-correct-input.png alt></a></p><p>And the door unlocks to you!!</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/door-unlocked.png><img class=img src=/images/microcorruption/door-unlocked.png alt></a></p><p>Off to Sydney :)</p></article><section class=article-labels><a class="article-category li" href=/categories/reverse-engineering/><span class=hashtag>#</span>Reverse Engineering</a><a class="article-category li" href=/categories/micro-corruption/><span class=hashtag>#</span>Micro Corruption</a><a class="article-tag li" href=/tags/input-check/><span class=hashtag>#</span>input check</a></section><section class=article-navigation><p><a class=link href=/posts/microcorruption-hanoi/><span class=li></span>MicroCorruption: Hanoi</a></p><p><a class=link href=/posts/microcorruption-sydney/><span class=li></span>MicroCorruption: Sydney</a></p></section></div><section id=footer class="footer max-body-width"><p>© 2026 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script></div></body></html>
+</code></pre>
+<blockquote>
+<p>Keep comparing the byte of the input at index(r14) to the byte of the created password at index(r14). If they are not equal, clear r15(becomes zero) and return. If they are equal, repeat for each byte until 8(this is the required length of the password). Set r15 to 1 and return.</p>
+</blockquote>
+<p>Falling back to <code>main</code>, only if <code>r15</code> is not zero does the door unlock.</p>
+<p><img src="/media/posts/microcorruption/New-Orleans-test.webp" alt="" width="805" height="445" loading="lazy" decoding="async"></p>
+<p>You now put in the correct input: the created password:</p>
+<p><img src="/media/posts/microcorruption/New-Orleans-correct-input.webp" alt="" width="790" height="324" loading="lazy" decoding="async"></p>
+<p>And the door unlocks to you!!</p>
+<p><img src="/media/posts/microcorruption/door-unlocked.webp" alt="" width="403" height="37" loading="lazy" decoding="async"></p>
+<p>Off to Sydney :)</p></div>
+  <footer class="post-end"><p class="mono"><a href="/stream/?lens=microcorruption">one of 12 in MicroCorruption ↗</a></p><p class="mono"><a href="/posts/microcorruption-hanoi/">← S.4 MicroCorruption: Hanoi</a> &nbsp;·&nbsp; <a href="/posts/microcorruption-sydney/">S.6 MicroCorruption: Sydney →</a></p></footer>
+</article>
+<div class="grain"></div>
+<script src="/js/common.js"></script>
+
+</body>
+</html>

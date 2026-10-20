@@ -1,41 +1,102 @@
-<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.154.5"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light"><meta name=supported-color-schemes content="light"><title>Case 02 → Gone Phishing 🪱&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel=stylesheet><link rel=icon type=image/png sizes=32x32 href=/images/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/images/favicon.ico><link rel=stylesheet href=/css/core.min.365ca8fdb23faa48c9ee0b1db3e557cb91e00aa641c11d9ab3d53d928c8341f94f3cbfc24e510a5ffbed83462148dd0d.css integrity=sha384-Nlyo/bI/qkjJ7gsds+VXy5HgCqZBwR2as9U9koyDQflPPL/CTlEKX/vtg0YhSN0N><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/index>Index</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>Case 02 → Gone Phishing 🪱</h1><p class=article-date>2023-08-12</p></section><article class=markdown-body><p><strong>Background: The complaints are pouring in, and people are fed up with the sudden increase in phishing calls attempting to steal their identity details.</strong></p><p><strong>Mission</strong>: <strong>Analyze the data and use your detective skills to find any patterns or clues that could lead us to the source of these calls.</strong></p><p><strong>For all the marbles: What phone number is used for placing the phishing calls?</strong></p><hr><p>To catch a phisherman.</p><pre tabindex=0><code class=language-markup data-lang=markup>.execute database script &lt;|
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case 02 → Gone Phishing 🪱 · Levanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono&family=Fraunces:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="Levanto" href="/index.xml">
+</head>
+<body class="page-post" style="--age:0.44">
+<header class="topbar">
+  <a class="avatar" href="/" aria-label="home"><img class="face" src="/img/cat-face.webp" alt="the cat"><img class="wave" src="/img/cat-wave.webp" alt=""></a>
+  <nav><a href="/stream/">stream</a><a href="/#back">about</a></nav>
+</header>
+<article class="post">
+  <div class="post-head"><img class="print" src="/media/prints/case_02.webp" alt="">
+    <div><span class="mono">S.22</span><h1>Case 02 → Gone Phishing 🪱</h1><p class="sub">Kusto Detective Agency Season 2 Case 2</p><span class="mono">12 Aug 2023 · write-up · kql</span></div>
+  </div>
+  <div class="post-body "><p><strong>Background: The complaints are pouring in, and people are fed up with the sudden increase in phishing calls attempting to steal their identity details.</strong></p>
+<p><strong>Mission</strong>: <strong>Analyze the data and use your detective skills to find any patterns or clues that could lead us to the source of these calls.</strong></p>
+<p><strong>For all the marbles: What phone number is used for placing the phishing calls?</strong></p>
+<hr />
+<p>To catch a phisherman.</p>
+<pre><code class="language-markup">.execute database script &lt;|
 .create-merge table PhoneCalls (Timestamp:datetime, EventType:string, CallConnectionId:string, Properties:dynamic)
 //clear any previously ingested data if such exists
 .clear table PhoneCalls data
-.ingest async into table PhoneCalls (@&#39;https://kustodetectiveagency.blob.core.windows.net/kda2c2phonecalls/log_00000.csv.gz&#39;)
-.ingest async into table PhoneCalls (@&#39;https://kustodetectiveagency.blob.core.windows.net/kda2c2phonecalls/log_00001.csv.gz&#39;)
+.ingest async into table PhoneCalls (@'https://kustodetectiveagency.blob.core.windows.net/kda2c2phonecalls/log_00000.csv.gz')
+.ingest async into table PhoneCalls (@'https://kustodetectiveagency.blob.core.windows.net/kda2c2phonecalls/log_00001.csv.gz')
 // Last command is running sync, so when it finishes the data is already ingested.
 // It can take about 1min to run.
-.ingest into table PhoneCalls (@&#39;https://kustodetectiveagency.blob.core.windows.net/kda2c2phonecalls/log_00002.csv.gz&#39;)
-</code></pre><p>We need to understand the structure of this data.</p><pre tabindex=0><code class=language-markup data-lang=markup>PhoneCalls
-| where EventType == &#34;Disconnect&#34;
+.ingest into table PhoneCalls (@'https://kustodetectiveagency.blob.core.windows.net/kda2c2phonecalls/log_00002.csv.gz')
+</code></pre>
+<p>We need to understand the structure of this data.</p>
+<pre><code class="language-markup">PhoneCalls
+| where EventType == &quot;Disconnect&quot;
 | extend DisconnectedBy = tostring(Properties.DisconnectedBy)
 | take 5
-</code></pre><pre tabindex=0><code class=language-markup data-lang=markup>PhoneCalls
-| where EventType == &#34;Connect&#34;
+</code></pre>
+<pre><code class="language-markup">PhoneCalls
+| where EventType == &quot;Connect&quot;
 | extend Origin = tostring(Properties.Origin), Destination = tostring(Properties.Destination), IsHidden = tobool(Properties.IsHidden)
 | project-away Properties
 | take 5
-</code></pre><p>We join the two events by the callConnectionId to get a better view</p><pre tabindex=0><code class=language-markup data-lang=markup>PhoneCalls
-| where EventType == &#34;Disconnect&#34;
+</code></pre>
+<p>We join the two events by the callConnectionId to get a better view</p>
+<pre><code class="language-markup">PhoneCalls
+| where EventType == &quot;Disconnect&quot;
 | extend DisconnectedBy = tostring(Properties.DisconnectedBy)
 | join kind=inner(PhoneCalls
-    | where EventType == &#34;Connect&#34;
+    | where EventType == &quot;Connect&quot;
     | extend Origin = tostring(Properties.Origin), Destination = tostring(Properties.Destination), IsHidden = tobool(Properties.IsHidden))
     on CallConnectionId
-| extend Duration = datetime_diff(&#39;minute&#39;, Timestamp, Timestamp1)
+| extend Duration = datetime_diff('minute', Timestamp, Timestamp1)
 | project CallConnectionId, Origin, Destination, IsHidden, Duration, DisconnectedBy 
 | take 5
-</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/02_1.png><img class=img src=/images/kusto/02_1.png alt></a></p><p>For us to proceed, we have to draw out the behavior of a phishing call and analyze using these.</p><p>The phishing call would probably:</p><ul><li>Be hidden</li></ul><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/02_2.png><img class=img src=/images/kusto/02_2.png alt="Count by whether IsHidden or not"></a></p><p>Count by whether IsHidden or not</p><ul><li><p>Disconnected by me</p><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/02_3.png><img class=img src=/images/kusto/02_3.png alt="Count by who disconnected the call"></a></p><p>Count by who disconnected the call</p></li><li><p>Lasts a shorter time</p><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/02_4.png><img class=img src=/images/kusto/02_4.png alt="Count of number of calls by Duration"></a></p><p>Count of number of calls by Duration</p></li></ul><p>To find the phisher, we have to check all these boxes.</p><pre tabindex=0><code class=language-markup data-lang=markup>PhoneCalls
-| where EventType == &#34;Disconnect&#34;
+</code></pre>
+<p><img src="/media/posts/kusto/02_1.webp" alt="" width="609" height="137" loading="lazy" decoding="async"></p>
+<p>For us to proceed, we have to draw out the behavior of a phishing call and analyze using these.</p>
+<p>The phishing call would probably:</p>
+<ul>
+<li>Be hidden</li>
+</ul>
+<p><img src="/media/posts/kusto/02_2.webp" alt="Count by whether IsHidden or not" width="318" height="104" loading="lazy" decoding="async"></p>
+<p>Count by whether IsHidden or not</p>
+<ul>
+<li>
+<p>Disconnected by me</p>
+<p><img src="/media/posts/kusto/02_3.webp" alt="Count by who disconnected the call" width="188" height="100" loading="lazy" decoding="async"></p>
+<p>Count by who disconnected the call</p>
+</li>
+<li>
+<p>Lasts a shorter time</p>
+<p><img src="/media/posts/kusto/02_4.webp" alt="Count of number of calls by Duration" width="956" height="276" loading="lazy" decoding="async"></p>
+<p>Count of number of calls by Duration</p>
+</li>
+</ul>
+<p>To find the phisher, we have to check all these boxes.</p>
+<pre><code class="language-markup">PhoneCalls
+| where EventType == &quot;Disconnect&quot;
 | extend DisconnectedBy = tostring(Properties.DisconnectedBy)
 | join kind=inner(PhoneCalls
-    | where EventType == &#34;Connect&#34;
+    | where EventType == &quot;Connect&quot;
     | extend Origin = tostring(Properties.Origin), Destination = tostring(Properties.Destination), IsHidden = tobool(Properties.IsHidden))
     on CallConnectionId
-| extend Duration = datetime_diff(&#39;minute&#39;, Timestamp, Timestamp1)
+| extend Duration = datetime_diff('minute', Timestamp, Timestamp1)
 | project CallConnectionId, Origin, Destination, IsHidden, Duration, DisconnectedBy 
-| where IsHidden == true and DisconnectedBy == &#34;Destination&#34;
+| where IsHidden == true and DisconnectedBy == &quot;Destination&quot;
 | summarize count() by Origin
 | top 1 by count_
-</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/02_5.png><img class=img src=/images/kusto/02_5.png alt=Untitled></a></p></article><section class=article-labels><a class="article-category li" href=/categories/kusto-detective-agency/><span class=hashtag>#</span>Kusto Detective Agency</a><a class="article-tag li" href=/tags/kql/><span class=hashtag>#</span>kql</a></section><section class=article-navigation><p><a class=link href=/posts/case_01/><span class=li></span>Case 01 → Something’s leaking 👃🏾</a></p><p><a class=link href=/posts/case_03/><span class=li></span>Case 03 → A Brief History of Time 🚘</a></p></section></div><section id=footer class="footer max-body-width"><p>© 2026 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script></div></body></html>
+</code></pre>
+<p><img src="/media/posts/kusto/02_5.webp" alt="Untitled" width="1280" height="985" loading="lazy" decoding="async"></p></div>
+  <footer class="post-end"><p class="mono"><a href="/stream/?lens=kusto">one of 11 in Kusto ↗</a></p><p class="mono"><a href="/posts/case_01/">← S.21 Case 01 → Something’s leaking 👃🏾</a> &nbsp;·&nbsp; <a href="/posts/case_03/">S.23 Case 03 → A Brief History of Time 🚘 →</a></p></footer>
+</article>
+<div class="grain"></div>
+<script src="/js/common.js"></script>
+
+</body>
+</html>

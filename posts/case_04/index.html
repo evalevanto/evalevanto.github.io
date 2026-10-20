@@ -1,34 +1,77 @@
-<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.154.5"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light"><meta name=supported-color-schemes content="light"><title>Case 04 → Send one to catch them 🥷🏾&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel=stylesheet><link rel=icon type=image/png sizes=32x32 href=/images/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/images/favicon.ico><link rel=stylesheet href=/css/core.min.365ca8fdb23faa48c9ee0b1db3e557cb91e00aa641c11d9ab3d53d928c8341f94f3cbfc24e510a5ffbed83462148dd0d.css integrity=sha384-Nlyo/bI/qkjJ7gsds+VXy5HgCqZBwR2as9U9koyDQflPPL/CTlEKX/vtg0YhSN0N><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/index>Index</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>Case 04 → Send one to catch them 🥷🏾</h1><p class=article-date>2023-08-12</p></section><article class=markdown-body><p><strong>Background: Someone has hacked into the Digitown municipality system and stolen these documents.</strong></p><p><strong>Mission: Shed some light on who is behind these crimes and clear Gaia’s name.</strong></p><p><strong>For all the marbles:</strong> <strong>Who is behind all this?</strong></p><hr><p>A guy got in and out of a system with a document.</p><pre tabindex=0><code class=language-markup data-lang=markup>.execute database script &lt;|
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case 04 → Send one to catch them 🥷🏾 · Levanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono&family=Fraunces:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="Levanto" href="/index.xml">
+</head>
+<body class="page-post" style="--age:0.44">
+<header class="topbar">
+  <a class="avatar" href="/" aria-label="home"><img class="face" src="/img/cat-face.webp" alt="the cat"><img class="wave" src="/img/cat-wave.webp" alt=""></a>
+  <nav><a href="/stream/">stream</a><a href="/#back">about</a></nav>
+</header>
+<article class="post">
+  <div class="post-head"><img class="print" src="/media/prints/case_04.webp" alt="">
+    <div><span class="mono">S.24</span><h1>Case 04 → Send one to catch them 🥷🏾</h1><p class="sub">Kusto Detective Agency Season 2 Case 4</p><span class="mono">12 Aug 2023 · write-up · kql</span></div>
+  </div>
+  <div class="post-body "><p><strong>Background: Someone has hacked into the Digitown municipality system and stolen these documents.</strong></p>
+<p><strong>Mission: Shed some light on who is behind these crimes and clear Gaia’s name.</strong></p>
+<p><strong>For all the marbles:</strong> <strong>Who is behind all this?</strong></p>
+<hr />
+<p>A guy got in and out of a system with a document.</p>
+<pre><code class="language-markup">.execute database script &lt;|
 .create-merge table IpInfo (IpCidr:string, Info:string)
 //clear any previously ingested data if such exists
 .clear table IpInfo data
-.ingest into table IpInfo (@&#39;https://kustodetectiveagency.blob.core.windows.net/kda2c4network/ip-lookup.csv.gz&#39;)
+.ingest into table IpInfo (@'https://kustodetectiveagency.blob.core.windows.net/kda2c4network/ip-lookup.csv.gz')
 .create-merge table NetworkMetrics (Timestamp:datetime, ClientIP:string, TargetIP:string, BytesSent:long, BytesReceived:long, NewConnections:int)
 .clear table NetworkMetrics data
-.ingest async into table NetworkMetrics (@&#39;https://kustodetectiveagency.blob.core.windows.net/kda2c4network/log_00000.csv.gz&#39;)
-.ingest async into table NetworkMetrics (@&#39;https://kustodetectiveagency.blob.core.windows.net/kda2c4network/log_00001.csv.gz&#39;)
+.ingest async into table NetworkMetrics (@'https://kustodetectiveagency.blob.core.windows.net/kda2c4network/log_00000.csv.gz')
+.ingest async into table NetworkMetrics (@'https://kustodetectiveagency.blob.core.windows.net/kda2c4network/log_00001.csv.gz')
 // Last command is running sync, so when it finishes the data is already ingested.
 // It can take about 1.5min to run.
-.ingest into table NetworkMetrics (@&#39;https://kustodetectiveagency.blob.core.windows.net/kda2c4network/log_00002.csv.gz&#39;)
-</code></pre><p>We need to find the anomaly.</p><p><strong>Anomaly by time:</strong></p><p>For each client, let’s find the high level time they were active in the hub.</p><pre tabindex=0><code class=language-markup data-lang=markup>NetworkMetrics
+.ingest into table NetworkMetrics (@'https://kustodetectiveagency.blob.core.windows.net/kda2c4network/log_00002.csv.gz')
+</code></pre>
+<p>We need to find the anomaly.</p>
+<p><strong>Anomaly by time:</strong></p>
+<p>For each client, let’s find the high level time they were active in the hub.</p>
+<pre><code class="language-markup">NetworkMetrics
 | summarize arg_min(Timestamp, *) by ClientIP
 | join kind=inner(NetworkMetrics
     | summarize arg_max(Timestamp, *) by ClientIP)
     on ClientIP
-| project ClientIP, Duration=datetime_diff(&#39;day&#39;, Timestamp1, Timestamp), BytesSent, BytesReceived
+| project ClientIP, Duration=datetime_diff('day', Timestamp1, Timestamp), BytesSent, BytesReceived
 | distinct Duration
-</code></pre><p>We notice that there is a client IP that connected for less than a day.</p><pre tabindex=0><code class=language-markup data-lang=markup>NetworkMetrics
+</code></pre>
+<p>We notice that there is a client IP that connected for less than a day. </p>
+<pre><code class="language-markup">NetworkMetrics
 | summarize arg_min(Timestamp, *) by ClientIP
 | join kind=inner(NetworkMetrics
     | summarize arg_max(Timestamp, *) by ClientIP)
     on ClientIP
-| project ClientIP, Duration=datetime_diff(&#39;day&#39;, Timestamp1, Timestamp), BytesSent, BytesReceived
+| project ClientIP, Duration=datetime_diff('day', Timestamp1, Timestamp), BytesSent, BytesReceived
 | order by Duration asc
 | take 1
 | evaluate ipv4_lookup(IpInfo, ClientIP, IpCidr)
-</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/04_2.png><img class=img src=/images/kusto/04_2.png alt></a></p><p><strong>Anomaly by bytes:</strong></p><pre tabindex=0><code class=language-markup data-lang=markup>NetworkMetrics
+</code></pre>
+<p><img src="/media/posts/kusto/04_2.webp" alt="" width="1280" height="1117" loading="lazy" decoding="async"></p>
+<p><strong>Anomaly by bytes:</strong></p>
+<pre><code class="language-markup">NetworkMetrics
 | summarize sum(BytesSent) by ClientIP
 | order by sum_BytesSent asc
 | take 1
 | evaluate ipv4_lookup(IpInfo, ClientIP, IpCidr)
-</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/04_2.png><img class=img src=/images/kusto/04_2.png alt></a></p></article><section class=article-labels><a class="article-category li" href=/categories/kusto-detective-agency/><span class=hashtag>#</span>Kusto Detective Agency</a><a class="article-tag li" href=/tags/kql/><span class=hashtag>#</span>kql</a></section><section class=article-navigation><p><a class=link href=/posts/case_03/><span class=li></span>Case 03 → A Brief History of Time 🚘</a></p><p><a class=link href=/posts/case_05/><span class=li></span>Case 05 → Devils and details 🪵</a></p></section></div><section id=footer class="footer max-body-width"><p>© 2026 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script></div></body></html>
+</code></pre>
+<p><img src="/media/posts/kusto/04_2.webp" alt="" width="1280" height="1117" loading="lazy" decoding="async"></p></div>
+  <footer class="post-end"><p class="mono"><a href="/stream/?lens=kusto">one of 11 in Kusto ↗</a></p><p class="mono"><a href="/posts/case_03/">← S.23 Case 03 → A Brief History of Time 🚘</a> &nbsp;·&nbsp; <a href="/posts/case_05/">S.25 Case 05 → Devils and details 🪵 →</a></p></footer>
+</article>
+<div class="grain"></div>
+<script src="/js/common.js"></script>
+
+</body>
+</html>

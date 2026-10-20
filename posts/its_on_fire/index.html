@@ -1,69 +1,120 @@
-<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.154.5"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light"><meta name=supported-color-schemes content="light"><title>It's On Fire! 🔥&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel=stylesheet><link rel=icon type=image/png sizes=32x32 href=/images/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/images/favicon.ico><link rel=stylesheet href=/css/core.min.365ca8fdb23faa48c9ee0b1db3e557cb91e00aa641c11d9ab3d53d928c8341f94f3cbfc24e510a5ffbed83462148dd0d.css integrity=sha384-Nlyo/bI/qkjJ7gsds+VXy5HgCqZBwR2as9U9koyDQflPPL/CTlEKX/vtg0YhSN0N><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/index>Index</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>It's On Fire! 🔥</h1><p class=article-date>2023-11-16</p></section><article class=markdown-body><p><strong>The FLARE team is now enthusiastic about Google products and services but we suspect there is more to this Android game than meets the eye.</strong></p><hr><p>The first thing is to decompile the apk to inspect the application files. Since this is a <code>Flare-On</code> challenge, attempt to search for <code>flare-on.com</code> shows up in the <code>strings.xml</code> :</p><p><a target=_blank rel="noopener noreferrer" href=/images/flare/00.png><img class=img src=/images/flare/00.png alt=Untitled></a></p><p>Where is this string used in the code?</p><p><a target=_blank rel="noopener noreferrer" href=/images/flare/01.png><img class=img src=/images/flare/01.png alt=Untitled></a></p><div class=highlight><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=kd>private</span><span class=w> </span><span class=kd>final</span><span class=w> </span><span class=n>String</span><span class=w> </span><span class=nf>d</span><span class=p>(</span><span class=n>Context</span><span class=w> </span><span class=n>context</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>String</span><span class=w> </span><span class=n>slice</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>String</span><span class=w> </span><span class=n>string</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>context</span><span class=p>.</span><span class=na>getString</span><span class=p>(</span><span class=n>R</span><span class=p>.</span><span class=na>string</span><span class=p>.</span><span class=na>c2</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Intrinsics</span><span class=p>.</span><span class=na>checkNotNullExpressionValue</span><span class=p>(</span><span class=n>string</span><span class=p>,</span><span class=w> </span><span class=s>&#34;context.getString(R.string.c2)&#34;</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>String</span><span class=w> </span><span class=n>string2</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>context</span><span class=p>.</span><span class=na>getString</span><span class=p>(</span><span class=n>R</span><span class=p>.</span><span class=na>string</span><span class=p>.</span><span class=na>w1</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Intrinsics</span><span class=p>.</span><span class=na>checkNotNullExpressionValue</span><span class=p>(</span><span class=n>string2</span><span class=p>,</span><span class=w> </span><span class=s>&#34;context.getString(R.string.w1)&#34;</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>StringBuilder</span><span class=w> </span><span class=n>sb</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>StringBuilder</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>sb</span><span class=p>.</span><span class=na>append</span><span class=p>(</span><span class=n>string</span><span class=p>.</span><span class=na>subSequence</span><span class=p>(</span><span class=n>4</span><span class=p>,</span><span class=w> </span><span class=n>10</span><span class=p>));</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>sb</span><span class=p>.</span><span class=na>append</span><span class=p>(</span><span class=n>string2</span><span class=p>.</span><span class=na>subSequence</span><span class=p>(</span><span class=n>2</span><span class=p>,</span><span class=w> </span><span class=n>5</span><span class=p>));</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>String</span><span class=w> </span><span class=n>sb2</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>sb</span><span class=p>.</span><span class=na>toString</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Intrinsics</span><span class=p>.</span><span class=na>checkNotNullExpressionValue</span><span class=p>(</span><span class=n>sb2</span><span class=p>,</span><span class=w> </span><span class=s>&#34;StringBuilder().apply(builderAction).toString()&#34;</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kt>byte</span><span class=o>[]</span><span class=w> </span><span class=n>bytes</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>sb2</span><span class=p>.</span><span class=na>getBytes</span><span class=p>(</span><span class=n>Charsets</span><span class=p>.</span><span class=na>UTF_8</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Intrinsics</span><span class=p>.</span><span class=na>checkNotNullExpressionValue</span><span class=p>(</span><span class=n>bytes</span><span class=p>,</span><span class=w> </span><span class=s>&#34;this as java.lang.String).getBytes(charset)&#34;</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kt>long</span><span class=w> </span><span class=n>a2</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>a</span><span class=p>(</span><span class=n>bytes</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>StringBuilder</span><span class=w> </span><span class=n>sb3</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>StringBuilder</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>sb3</span><span class=p>.</span><span class=na>append</span><span class=p>(</span><span class=n>a2</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>sb3</span><span class=p>.</span><span class=na>append</span><span class=p>(</span><span class=n>a2</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>String</span><span class=w> </span><span class=n>sb4</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>sb3</span><span class=p>.</span><span class=na>toString</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Intrinsics</span><span class=p>.</span><span class=na>checkNotNullExpressionValue</span><span class=p>(</span><span class=n>sb4</span><span class=p>,</span><span class=w> </span><span class=s>&#34;StringBuilder().apply(builderAction).toString()&#34;</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>slice</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>StringsKt___StringsKt</span><span class=p>.</span><span class=na>slice</span><span class=p>(</span><span class=n>sb4</span><span class=p>,</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>IntRange</span><span class=p>(</span><span class=n>0</span><span class=p>,</span><span class=w> </span><span class=n>15</span><span class=p>));</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>return</span><span class=w> </span><span class=n>slice</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
-</span></span></span></code></pre></div><p>You find an interesting function. To understand what it does:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=c1># In psuedocode:</span>
-</span></span><span class=line><span class=cl><span class=n>c2</span> <span class=o>=</span> <span class=s2>&#34;[https://flare-on.com/evilc2server/report_token/report_token.php?token=](https://flare-on.com/evilc2server/report_token/report_token.php?token=)&#34;</span>
-</span></span><span class=line><span class=cl><span class=n>w1</span> <span class=o>=</span> <span class=s2>&#34;wednesday&#34;</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>func_d</span><span class=p>():</span>
-</span></span><span class=line><span class=cl>	<span class=n>str_</span> <span class=o>=</span> <span class=n>c2</span><span class=p>[</span><span class=mi>4</span><span class=p>:</span><span class=mi>11</span><span class=p>]</span> <span class=o>+</span> <span class=n>w1</span><span class=p>[</span><span class=mi>2</span><span class=p>:</span><span class=mi>6</span><span class=p>]</span> <span class=c1># &#34;s://fl&#34; + &#34;dne&#34;</span>
-</span></span><span class=line><span class=cl>	<span class=n>key</span> <span class=o>=</span> <span class=n>crc32</span><span class=p>(</span><span class=nb>str</span><span class=p>)</span> <span class=c1># 450830537</span>
-</span></span><span class=line><span class=cl>	<span class=n>key</span> <span class=o>+=</span> <span class=n>key</span> <span class=c1># 450830537450830537</span>
-</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nb>bytes</span><span class=p>(</span><span class=n>key</span><span class=p>[:</span><span class=mi>16</span><span class=p>])</span> <span class=c1># 4508305374508305</span>
-</span></span></code></pre></div><p>This function is called in another function:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=n>alg</span> <span class=o>=</span> <span class=s1>&#39;AES/CBC/PKCS5Padding&#39;</span>
-</span></span><span class=line><span class=cl><span class=n>iv</span> <span class=o>=</span> <span class=s1>&#39;abcdefghijklmnop&#39;</span>
-</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>c</span><span class=p>():</span>
-</span></span><span class=line><span class=cl>	<span class=n>key_b</span> <span class=o>=</span> <span class=n>func_d</span><span class=p>()</span>
-</span></span><span class=line><span class=cl>	<span class=n>decrypt_img</span> <span class=o>=</span> <span class=n>decrypt_aes</span><span class=p>(</span><span class=n>alg</span><span class=p>,</span> <span class=n>iv</span><span class=p>,</span> <span class=n>key</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>	<span class=k>with</span> <span class=nb>open</span><span class=p>(</span><span class=s1>&#39;dec.png&#39;</span><span class=p>,</span> <span class=n>b</span><span class=p>)</span> <span class=k>as</span> <span class=n>f</span><span class=p>:</span>
-</span></span><span class=line><span class=cl>		<span class=n>f</span><span class=o>.</span><span class=n>write</span><span class=p>(</span><span class=n>decrypt_img</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>		
-</span></span></code></pre></div><p>Now you understand what is required:</p><ul><li>Find the original image.</li><li>Decrypt it.</li></ul><p><a target=_blank rel="noopener noreferrer" href=/images/flare/02.png><img class=img src=/images/flare/02.png alt=Untitled></a></p><p><a target=_blank rel="noopener noreferrer" href=/images/flare/03.png><img class=img src=/images/flare/03.png alt=Untitled></a></p><p>Get the resource : <code>raw.iv</code></p><p>Your python script to decrypt the <code>iv.png</code> using the <code>iv</code> and <code>key</code> that we have retrieved.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>from</span> <span class=nn>cryptography.hazmat.primitives.ciphers</span> <span class=kn>import</span> <span class=n>Cipher</span><span class=p>,</span> <span class=n>algorithms</span><span class=p>,</span> <span class=n>modes</span>
-</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>cryptography.hazmat.primitives</span> <span class=kn>import</span> <span class=n>padding</span>
-</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>cryptography.hazmat.backends</span> <span class=kn>import</span> <span class=n>default_backend</span>
-</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=nn>base64</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>decrypt_aes_cbc_pkcs5</span><span class=p>(</span><span class=n>encrypted_image</span><span class=p>,</span> <span class=n>key</span><span class=p>):</span>
-</span></span><span class=line><span class=cl>    <span class=n>iv</span> <span class=o>=</span> <span class=sa>b</span><span class=s1>&#39;abcdefghijklmnop&#39;</span>
-</span></span><span class=line><span class=cl>    <span class=n>encrypted_data</span> <span class=o>=</span> <span class=n>encrypted_image</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=c1># Create a Cipher object for AES/CBC/PKCS5Padding decryption</span>
-</span></span><span class=line><span class=cl>    <span class=n>cipher</span> <span class=o>=</span> <span class=n>Cipher</span><span class=p>(</span><span class=n>algorithms</span><span class=o>.</span><span class=n>AES</span><span class=p>(</span><span class=n>key</span><span class=p>),</span> <span class=n>modes</span><span class=o>.</span><span class=n>CBC</span><span class=p>(</span><span class=n>iv</span><span class=p>),</span> <span class=n>backend</span><span class=o>=</span><span class=n>default_backend</span><span class=p>())</span>
-</span></span><span class=line><span class=cl>    <span class=n>decryptor</span> <span class=o>=</span> <span class=n>cipher</span><span class=o>.</span><span class=n>decryptor</span><span class=p>()</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=c1># Decrypt the data and remove padding</span>
-</span></span><span class=line><span class=cl>    <span class=n>decrypted_padded</span> <span class=o>=</span> <span class=n>decryptor</span><span class=o>.</span><span class=n>update</span><span class=p>(</span><span class=n>encrypted_data</span><span class=p>)</span> <span class=o>+</span> <span class=n>decryptor</span><span class=o>.</span><span class=n>finalize</span><span class=p>()</span>
-</span></span><span class=line><span class=cl>    <span class=n>unpadder</span> <span class=o>=</span> <span class=n>padding</span><span class=o>.</span><span class=n>PKCS7</span><span class=p>(</span><span class=mi>128</span><span class=p>)</span><span class=o>.</span><span class=n>unpadder</span><span class=p>()</span>
-</span></span><span class=line><span class=cl>    <span class=n>decrypted_data</span> <span class=o>=</span> <span class=n>unpadder</span><span class=o>.</span><span class=n>update</span><span class=p>(</span><span class=n>decrypted_padded</span><span class=p>)</span> <span class=o>+</span> <span class=n>unpadder</span><span class=o>.</span><span class=n>finalize</span><span class=p>()</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>decrypted_data</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># Read the encrypted image</span>
-</span></span><span class=line><span class=cl><span class=k>with</span> <span class=nb>open</span><span class=p>(</span><span class=s1>&#39;iv.png&#39;</span><span class=p>,</span> <span class=s1>&#39;rb&#39;</span><span class=p>)</span> <span class=k>as</span> <span class=n>f</span><span class=p>:</span>
-</span></span><span class=line><span class=cl>    <span class=n>encrypted_image</span> <span class=o>=</span> <span class=n>f</span><span class=o>.</span><span class=n>read</span><span class=p>()</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=n>decrypted_data</span> <span class=o>=</span> <span class=n>decrypt_aes_cbc_pkcs5</span><span class=p>(</span><span class=n>encrypted_image</span><span class=p>,</span> <span class=sa>b</span><span class=s1>&#39;4508305374508305&#39;</span><span class=p>)</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># Write the decrypted image</span>
-</span></span><span class=line><span class=cl><span class=k>with</span> <span class=nb>open</span><span class=p>(</span><span class=s1>&#39;decrypted.png&#39;</span><span class=p>,</span> <span class=s1>&#39;wb&#39;</span><span class=p>)</span> <span class=k>as</span> <span class=n>f</span><span class=p>:</span>
-</span></span><span class=line><span class=cl>    <span class=n>f</span><span class=o>.</span><span class=n>write</span><span class=p>(</span><span class=n>decrypted_data</span><span class=p>)</span>
-</span></span></code></pre></div><p>Cracked!</p><p><a target=_blank rel="noopener noreferrer" href=/images/flare/05.png><img class=img src=/images/flare/05.png alt=Untitled></a></p></article><section class=article-labels><a class="article-category li" href=/categories/reverse-engineering/><span class=hashtag>#</span>Reverse Engineering</a><a class="article-category li" href=/categories/ctf-writeups/><span class=hashtag>#</span>CTF WriteUps</a><a class="article-tag li" href=/tags/flareon/><span class=hashtag>#</span>FlareOn</a></section><section class=article-navigation><p><a class=link href=/posts/case_10/><span class=li></span>Case 10 → The Battle Of Trojan 🐴</a></p><p><a class=link href=/posts/case_09/><span class=li></span>Case 09 → Taken ☎️</a></p></section></div><section id=footer class="footer max-body-width"><p>© 2026 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script></div></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>It&#x27;s On Fire! 🔥 · Levanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono&family=Fraunces:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="Levanto" href="/index.xml">
+</head>
+<body class="page-post" style="--age:0.39">
+<header class="topbar">
+  <a class="avatar" href="/" aria-label="home"><img class="face" src="/img/cat-face.webp" alt="the cat"><img class="wave" src="/img/cat-wave.webp" alt=""></a>
+  <nav><a href="/stream/">stream</a><a href="/#back">about</a></nav>
+</header>
+<article class="post">
+  <div class="post-head"><img class="print" src="/media/prints/its_on_fire.webp" alt="">
+    <div><span class="mono">S.32</span><h1>It&#x27;s On Fire! 🔥</h1><p class="sub">FlareOn 2023 Challenge 2</p><span class="mono">16 Nov 2023 · write-up · flareon</span></div>
+  </div>
+  <div class="post-body "><p><strong>The FLARE team is now enthusiastic about Google products and services but we suspect there is more to this Android game than meets the eye.</strong></p>
+<hr />
+<p>The first thing is to decompile the apk to inspect the application files. Since this is a <code>Flare-On</code> challenge, attempt to search for <code>flare-on.com</code> shows up in the <code>strings.xml</code> :</p>
+<p><img src="/media/posts/flare/00.webp" alt="Untitled" width="886" height="243" loading="lazy" decoding="async"></p>
+<p>Where is this string used in the code?</p>
+<p><img src="/media/posts/flare/01.webp" alt="Untitled" width="888" height="398" loading="lazy" decoding="async"></p>
+<pre><code class="language-java">private final String d(Context context) {
+        String slice;
+        String string = context.getString(R.string.c2);
+        Intrinsics.checkNotNullExpressionValue(string, &quot;context.getString(R.string.c2)&quot;);
+        String string2 = context.getString(R.string.w1);
+        Intrinsics.checkNotNullExpressionValue(string2, &quot;context.getString(R.string.w1)&quot;);
+        StringBuilder sb = new StringBuilder();
+        sb.append(string.subSequence(4, 10));
+        sb.append(string2.subSequence(2, 5));
+        String sb2 = sb.toString();
+        Intrinsics.checkNotNullExpressionValue(sb2, &quot;StringBuilder().apply(builderAction).toString()&quot;);
+        byte[] bytes = sb2.getBytes(Charsets.UTF_8);
+        Intrinsics.checkNotNullExpressionValue(bytes, &quot;this as java.lang.String).getBytes(charset)&quot;);
+        long a2 = a(bytes);
+        StringBuilder sb3 = new StringBuilder();
+        sb3.append(a2);
+        sb3.append(a2);
+        String sb4 = sb3.toString();
+        Intrinsics.checkNotNullExpressionValue(sb4, &quot;StringBuilder().apply(builderAction).toString()&quot;);
+        slice = StringsKt___StringsKt.slice(sb4, new IntRange(0, 15));
+        return slice;
+    }
+</code></pre>
+<p>You find an interesting function. To understand what it does:</p>
+<pre><code class="language-python"># In psuedocode:
+c2 = &quot;[https://flare-on.com/evilc2server/report_token/report_token.php?token=](https://flare-on.com/evilc2server/report_token/report_token.php?token=)&quot;
+w1 = &quot;wednesday&quot;
+
+def func_d():
+    str_ = c2[4:11] + w1[2:6] # &quot;s://fl&quot; + &quot;dne&quot;
+    key = crc32(str) # 450830537
+    key += key # 450830537450830537
+    return bytes(key[:16]) # 4508305374508305
+
+</code></pre>
+<p>This function is called in another function:</p>
+<pre><code class="language-python">alg = 'AES/CBC/PKCS5Padding'
+iv = 'abcdefghijklmnop'
+def c():
+    key_b = func_d()
+    decrypt_img = decrypt_aes(alg, iv, key)
+    with open('dec.png', b) as f:
+        f.write(decrypt_img)
+
+</code></pre>
+<p>Now you understand what is required:</p>
+<ul>
+<li>Find the original image.</li>
+<li>Decrypt it.</li>
+</ul>
+<p><img src="/media/posts/flare/02.webp" alt="Untitled" width="667" height="129" loading="lazy" decoding="async"></p>
+<p><img src="/media/posts/flare/03.webp" alt="Untitled" width="309" height="111" loading="lazy" decoding="async"></p>
+<p>Get the resource : <code>raw.iv</code> </p>
+<p>Your python script to decrypt the <code>iv.png</code> using the <code>iv</code> and <code>key</code> that we have retrieved.</p>
+<pre><code class="language-python">from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.backends import default_backend
+import base64
+
+def decrypt_aes_cbc_pkcs5(encrypted_image, key):
+    iv = b'abcdefghijklmnop'
+    encrypted_data = encrypted_image
+
+    # Create a Cipher object for AES/CBC/PKCS5Padding decryption
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    decryptor = cipher.decryptor()
+
+    # Decrypt the data and remove padding
+    decrypted_padded = decryptor.update(encrypted_data) + decryptor.finalize()
+    unpadder = padding.PKCS7(128).unpadder()
+    decrypted_data = unpadder.update(decrypted_padded) + unpadder.finalize()
+
+    return decrypted_data
+
+# Read the encrypted image
+with open('iv.png', 'rb') as f:
+    encrypted_image = f.read()
+
+decrypted_data = decrypt_aes_cbc_pkcs5(encrypted_image, b'4508305374508305')
+
+# Write the decrypted image
+with open('decrypted.png', 'wb') as f:
+    f.write(decrypted_data)
+</code></pre>
+<p>Cracked!</p>
+<p><img src="/media/posts/flare/05.webp" alt="Untitled" width="1280" height="596" loading="lazy" decoding="async"></p></div>
+  <footer class="post-end"><p class="mono"><a href="/stream/?lens=ctf">one of 6 in CTF ↗</a></p><p class="mono"><a href="/posts/case_09/">← S.31 Case 09 → Taken ☎️</a> &nbsp;·&nbsp; <a href="/posts/case_10/">S.33 Case 10 → The Battle Of Trojan 🐴 →</a></p></footer>
+</article>
+<div class="grain"></div>
+<script src="/js/common.js"></script>
+
+</body>
+</html>

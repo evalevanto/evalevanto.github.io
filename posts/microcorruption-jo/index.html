@@ -1,1 +1,70 @@
-<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.154.5"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light"><meta name=supported-color-schemes content="light"><title>MicroCorruption: Johannesburg&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel=stylesheet><link rel=icon type=image/png sizes=32x32 href=/images/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/images/favicon.ico><link rel=stylesheet href=/css/core.min.365ca8fdb23faa48c9ee0b1db3e557cb91e00aa641c11d9ab3d53d928c8341f94f3cbfc24e510a5ffbed83462148dd0d.css integrity=sha384-Nlyo/bI/qkjJ7gsds+VXy5HgCqZBwR2as9U9koyDQflPPL/CTlEKX/vtg0YhSN0N><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/index>Index</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>MicroCorruption: Johannesburg</h1><p class=article-date>2020-09-01</p></section><article class=markdown-body><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/jo/jo.png><img class=img src=/images/microcorruption/jo/jo.png alt></a></p><p>At this point in the journey, you expect a manual to greet you:</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/jo/jo-details.png><img class=img src=/images/microcorruption/jo/jo-details.png alt></a></p><ul><li>The lock is <strong>attached to HSM-1 module</strong>.</li><li>Passwords that are <strong>very long are rejected</strong>. Just how long is too long?</li></ul><p>The <code>main</code> function just calls <code>login</code>.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/jo/jo-login.png><img class=img src=/images/microcorruption/jo/jo-login.png alt></a></p><ul><li><p>The prompt states the password range should be within <code>8 - 16</code> characters long. However, from the input parameters of the <code>getsn</code> function:</p><ul><li><code>r14</code>: Holds length of the input buffer; <code>0x3f(63)</code> characters. This is more than the one prompted. <strong>Clue #1</strong>.</li><li><code>r15</code>: Holds the address to store the input buffer; <code>0x2400</code>.</li></ul></li><li><p>The input is copied to <code>#0x43ee</code>.</p></li><li><p>The copied text is then passed to <code>test_password_valid</code> function; a flag is then set which is tested and the call to <code>unlock_door</code> is made if it is not zero.</p></li><li><p>Observe: <code>cmp.b</code> instruction. A value at address <code>0x11(sp)</code> is compared with the bytes <code>#0xac</code>. If not equal, the program exits before loading return address. <strong>Clue #2</strong></p></li><li><p>Observe: the return address is held at address <code>add #0x12, sp</code>. Possible overwrite| <strong>Clue #3</strong>.</p></li></ul><p>You do a quick run with a test input <code>aaaaaaaaaaaaaaaa</code>:</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/jo/jo-test-input.png><img class=img src=/images/microcorruption/jo/jo-test-input.png alt></a></p><p>Looking through the <code>test_password_valid</code> you only notice the call to <code>INT 7D</code> and the flag is set at <code>#0x43e6</code></p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/jo/jo-test-pass-valid.png><img class=img src=/images/microcorruption/jo/jo-test-pass-valid.png alt></a></p><p>The test input obviously fails, however..</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/jo/jo-check-length.png><img class=img src=/images/microcorruption/jo/jo-check-length.png alt></a></p><ul><li>The return address is held at the <code>17th -18th</code> bytes of the input.</li><li>The byte that gets compared to <code>0xac</code> is the 16th byte of the input.</li></ul><p>You are tasting the victory now!</p><p>All that is left is to craft the input; the address you want to jump to is the call to <code>unlock_door</code> which is at <code>#0x4566</code>.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/jo/jo-correct-input.png><img class=img src=/images/microcorruption/jo/jo-correct-input.png alt></a></p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/door-unlocked.png><img class=img src=/images/microcorruption/door-unlocked.png alt></a></p><p>Who rocks? You do!</p><blockquote><p>Ready for Montevideo! :D</p></blockquote></article><section class=article-labels><a class="article-category li" href=/categories/reverse-engineering/><span class=hashtag>#</span>Reverse Engineering</a><a class="article-category li" href=/categories/micro-corruption/><span class=hashtag>#</span>Micro Corruption</a><a class="article-tag li" href=/tags/return-address-overwrite/><span class=hashtag>#</span>return address overwrite</a></section><section class=article-navigation><p><a class=link href=/posts/microcorruption-addis/><span class=li></span>MicroCorruption: Addis Ababa</a></p><p><a class=link href=/posts/microcorruption-monte/><span class=li></span>MicroCorruption: Montevideo</a></p></section></div><section id=footer class="footer max-body-width"><p>© 2026 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script></div></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MicroCorruption: Johannesburg · Levanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono&family=Fraunces:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="Levanto" href="/index.xml">
+</head>
+<body class="page-post" style="--age:1">
+<header class="topbar">
+  <a class="avatar" href="/" aria-label="home"><img class="face" src="/img/cat-face.webp" alt="the cat"><img class="wave" src="/img/cat-wave.webp" alt=""></a>
+  <nav><a href="/stream/">stream</a><a href="/#back">about</a></nav>
+</header>
+<article class="post">
+  <div class="post-head"><img class="print" src="/media/prints/microcorruption-jo.webp" alt="">
+    <div><span class="mono">S.8</span><h1>MicroCorruption: Johannesburg</h1><p class="sub">We in satafrica! :D</p><span class="mono">1 Sep 2020 · write-up · return address overwrite</span></div>
+  </div>
+  <div class="post-body "><p><img src="/media/posts/microcorruption/jo/jo.webp" alt="" width="644" height="431" loading="lazy" decoding="async"></p>
+<p>At this point in the journey, you expect a manual to greet you:</p>
+<p><img src="/media/posts/microcorruption/jo/jo-details.webp" alt="" width="597" height="858" loading="lazy" decoding="async"></p>
+<ul>
+<li>The lock is <strong>attached to HSM-1 module</strong>.</li>
+<li>Passwords that are <strong>very long are rejected</strong>. Just how long is too long?</li>
+</ul>
+<p>The <code>main</code> function just calls <code>login</code>.</p>
+<p><img src="/media/posts/microcorruption/jo/jo-login.webp" alt="" width="742" height="617" loading="lazy" decoding="async"></p>
+<ul>
+<li>
+<p>The prompt states the password range should be within <code>8 - 16</code> characters long. However, from the input parameters of the <code>getsn</code> function:</p>
+<ul>
+<li><code>r14</code>: Holds length of the input buffer; <code>0x3f(63)</code> characters. This is more than the one prompted. <strong>Clue #1</strong>.</li>
+<li><code>r15</code>: Holds the address to store the input buffer; <code>0x2400</code>.</li>
+</ul>
+</li>
+<li>
+<p>The input is copied to <code>#0x43ee</code>.</p>
+</li>
+<li>The copied text is then passed to <code>test_password_valid</code> function; a flag is then set which is tested and the call to <code>unlock_door</code> is made if it is not zero.</li>
+<li>Observe: <code>cmp.b</code> instruction. A value at address <code>0x11(sp)</code> is compared with the bytes <code>#0xac</code>. If not equal, the program exits before loading return address. <strong>Clue #2</strong></li>
+<li>Observe: the return address is held at address <code>add #0x12, sp</code>. Possible overwrite| <strong>Clue #3</strong>.</li>
+</ul>
+<p>You do a quick run with a test input <code>aaaaaaaaaaaaaaaa</code>:</p>
+<p><img src="/media/posts/microcorruption/jo/jo-test-input.webp" alt="" width="719" height="318" loading="lazy" decoding="async"></p>
+<p>Looking through the <code>test_password_valid</code> you only notice the call to <code>INT 7D</code> and the flag is set at <code>#0x43e6</code></p>
+<p><img src="/media/posts/microcorruption/jo/jo-test-pass-valid.webp" alt="" width="1280" height="571" loading="lazy" decoding="async"></p>
+<p>The test input obviously fails, however..</p>
+<p><img src="/media/posts/microcorruption/jo/jo-check-length.webp" alt="" width="741" height="782" loading="lazy" decoding="async"></p>
+<ul>
+<li>The return address is held at the <code>17th -18th</code> bytes of the input.</li>
+<li>The byte that gets compared to <code>0xac</code> is the 16th byte of the input.</li>
+</ul>
+<p>You are tasting the victory now!</p>
+<p>All that is left is to craft the input; the address you want to jump to is the call to <code>unlock_door</code> which is at <code>#0x4566</code>.</p>
+<p><img src="/media/posts/microcorruption/jo/jo-correct-input.webp" alt="" width="712" height="317" loading="lazy" decoding="async"></p>
+<p><img src="/media/posts/microcorruption/door-unlocked.webp" alt="" width="403" height="37" loading="lazy" decoding="async"></p>
+<p>Who rocks? You do! </p>
+<blockquote>
+<p>Ready for Montevideo! :D</p>
+</blockquote></div>
+  <footer class="post-end"><p class="mono"><a href="/stream/?lens=microcorruption">one of 12 in MicroCorruption ↗</a></p><p class="mono"><a href="/posts/microcorruption-addis/">← S.7 MicroCorruption: Addis Ababa</a> &nbsp;·&nbsp; <a href="/posts/microcorruption-monte/">S.9 MicroCorruption: Montevideo →</a></p></footer>
+</article>
+<div class="grain"></div>
+<script src="/js/common.js"></script>
+
+</body>
+</html>

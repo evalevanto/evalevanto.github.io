@@ -1,16 +1,64 @@
-<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.154.5"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light"><meta name=supported-color-schemes content="light"><title>Case 05 → Devils and details 🪵&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel=stylesheet><link rel=icon type=image/png sizes=32x32 href=/images/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/images/favicon.ico><link rel=stylesheet href=/css/core.min.365ca8fdb23faa48c9ee0b1db3e557cb91e00aa641c11d9ab3d53d928c8341f94f3cbfc24e510a5ffbed83462148dd0d.css integrity=sha384-Nlyo/bI/qkjJ7gsds+VXy5HgCqZBwR2as9U9koyDQflPPL/CTlEKX/vtg0YhSN0N><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/index>Index</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>Case 05 → Devils and details 🪵</h1><p class=article-date>2023-08-12</p></section><article class=markdown-body><p><strong>Background: Prof. Smoke spilled the beans on some top-secret functionality during the interview. The interview was actually published before its deletion.</strong></p><p><strong>Mission: Crack this case and unearth the elusive interview link</strong></p><p><strong>For all the marbles: What is the link to secret interview?</strong></p><hr><p>What we know about Scott’s podcast:</p><ul><li>He usually drops a podcast every week.</li><li>His videos rack up thousands of views.</li><li>On the 900th episode, a video was released, then deleted.</li></ul><p>What anomaly in the video logs are we looking for?</p><ul><li>There is a week that is missing a published video.</li><li>There is a week that has very few views.</li><li>There is a video that has a small live duration.</li></ul><p>First, we structure this data:</p><pre tabindex=0><code class=language-markup data-lang=markup>StorageArchiveLogs
-| parse EventText with TransactionType &#34; blob transaction: &#39;&#34; BlobURI &#34;&#39;&#34; *
-| parse EventText with &#34;Read blob transaction: &#39;&#34; * &#34;&#39; read access (&#34; Reads:long &#34; reads)&#34; *
-| parse EventText with * &#34;&#39; backup is created on &#34; Backup
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case 05 → Devils and details 🪵 · Levanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono&family=Fraunces:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="Levanto" href="/index.xml">
+</head>
+<body class="page-post" style="--age:0.44">
+<header class="topbar">
+  <a class="avatar" href="/" aria-label="home"><img class="face" src="/img/cat-face.webp" alt="the cat"><img class="wave" src="/img/cat-wave.webp" alt=""></a>
+  <nav><a href="/stream/">stream</a><a href="/#back">about</a></nav>
+</header>
+<article class="post">
+  <div class="post-head"><img class="print" src="/media/prints/case_05.webp" alt="">
+    <div><span class="mono">S.25</span><h1>Case 05 → Devils and details 🪵</h1><p class="sub">Kusto Detective Agency Season 2 Case 5</p><span class="mono">12 Aug 2023 · write-up · kql</span></div>
+  </div>
+  <div class="post-body "><p><strong>Background: Prof. Smoke spilled the beans on some top-secret functionality during the interview. The interview was actually published before its deletion.</strong></p>
+<p><strong>Mission: Crack this case and unearth the elusive interview link</strong></p>
+<p><strong>For all the marbles: What is the link to secret interview?</strong></p>
+<hr />
+<p>What we know about Scott’s podcast:</p>
+<ul>
+<li>He usually drops a podcast every week.</li>
+<li>His videos rack up thousands of views.</li>
+<li>On the 900th episode, a video was released, then deleted.</li>
+</ul>
+<p>What anomaly in the video logs are we looking for?</p>
+<ul>
+<li>There is a week that is missing a published video.</li>
+<li>There is a week that has very few views.</li>
+<li>There is a video that has a small live duration.</li>
+</ul>
+<p>First, we structure this data:</p>
+<pre><code class="language-markup">StorageArchiveLogs
+| parse EventText with TransactionType &quot; blob transaction: '&quot; BlobURI &quot;'&quot; *
+| parse EventText with &quot;Read blob transaction: '&quot; * &quot;' read access (&quot; Reads:long &quot; reads)&quot; *
+| parse EventText with * &quot;' backup is created on &quot; Backup
 | extend Details = parse_url(BlobURI)
 | extend Host = tostring(Details.Host), Path=tostring(Details.Path)
-</code></pre><p>We can save this into a database using <code>.set-or-replace</code> or use <code>let</code> and save this into a variable.</p><p>Let check for hosts in the first point in our knowledge base: <strong>Frequency of uploading podcasts.</strong></p><p>We use <a href=https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/series-periods-validatefunction target=_blank>series_period_validate</a> over 7 days;</p><pre tabindex=0><code class=language-markup data-lang=markup>StorageArchiveLogsEx
-| make-series Series_Reads = sumif(Reads, TransactionType == &#39;Read&#39;) on Timestamp step 1d by Host
-</code></pre><pre tabindex=0><code class=language-markup data-lang=markup>StorageArchiveLogsTs
+</code></pre>
+<p>We can save this into a database using <code>.set-or-replace</code> or use <code>let</code> and save this into a variable.</p>
+<p>Let check for hosts in the first point in our knowledge base: <strong>Frequency of uploading podcasts.</strong></p>
+<p>We use <a href="https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/series-periods-validatefunction">series_period_validate</a> over 7 days;</p>
+<pre><code class="language-markup">StorageArchiveLogsEx
+| make-series Series_Reads = sumif(Reads, TransactionType == 'Read') on Timestamp step 1d by Host
+</code></pre>
+<pre><code class="language-markup">StorageArchiveLogsTs
 | extend (flag, score) = series_periods_validate(Reads, 7.0)
 | where array_sort_asc(score)[0] &gt; 0.6
 | render timechart
-</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/05_1.png><img class=img src=/images/kusto/05_1.png alt=Untitled></a></p><p>We found one host that has 7 day periodicity! <a href=http://okeexeghsqwmda.blob.core.windows.net/ target=_blank>okeexeghsqwmda.blob.core.windows.net</a></p><p>Now, we check for anomalies in the second point in our knowledge base: <strong>Number of views</strong></p><p>We narrow down to two dates on our one host that had less views than usual.</p><pre tabindex=0><code class=language-markup data-lang=markup>StorageArchiveLogsTs
+</code></pre>
+<p><img src="/media/posts/kusto/05_1.webp" alt="Untitled" width="974" height="187" loading="lazy" decoding="async"></p>
+<p>We found one host that has 7 day periodicity! <a href="http://okeexeghsqwmda.blob.core.windows.net/">okeexeghsqwmda.blob.core.windows.net</a></p>
+<p>Now, we check for anomalies in the second point in our knowledge base: <strong>Number of views</strong></p>
+<p>We narrow down to two dates on our one host that had less views than usual.</p>
+<pre><code class="language-markup">StorageArchiveLogsTs
 | where Host in ((StorageArchiveLogsTs
     | extend (flag, score) = series_periods_validate(Reads, 7.0)
     | where array_sort_asc(score)[0] &gt; 0.6
@@ -18,8 +66,12 @@
 | extend (flag, score, baseline) = series_decompose_anomalies(Reads)
 | where array_index_of(flag, -1) &gt; 0
 | render timechart
-</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/05_2.png><img class=img src=/images/kusto/05_2.png alt=Untitled></a></p><p>For the final point in our knowledge base: <strong>Short Time To Live</strong></p><p>We correlate the host that had weirdly less views on a particular date with a delete event.</p><pre tabindex=0><code class=language-markup data-lang=markup>StorageArchiveLogsEx
-| where TransactionType == &#39;Delete&#39;
+</code></pre>
+<p><img src="/media/posts/kusto/05_2.webp" alt="Untitled" width="955" height="220" loading="lazy" decoding="async"></p>
+<p>For the final point in our knowledge base: <strong>Short Time To Live</strong></p>
+<p>We correlate the host that had weirdly less views on a particular date with a delete event.</p>
+<pre><code class="language-markup">StorageArchiveLogsEx
+| where TransactionType == 'Delete'
 | where Host in ((StorageArchiveLogsTs
 | where Host in ((StorageArchiveLogsTs
     | extend (flag, score) = series_periods_validate(Reads, 7.0)
@@ -28,8 +80,10 @@
 | extend (flag, score, baseline) = series_decompose_anomalies(Reads)
 | where array_index_of(flag, -1) &gt; 0 and array_sort_asc(score)[0] &lt; -5
 | project Host))
-</code></pre><p>Let’s find the backup URL:</p><pre tabindex=0><code class=language-markup data-lang=markup>StorageArchiveLogsEx
-| where TransactionType == &#39;Delete&#39;
+</code></pre>
+<p>Let’s find the backup URL:</p>
+<pre><code class="language-markup">StorageArchiveLogsEx
+| where TransactionType == 'Delete'
 | where Host in ((StorageArchiveLogsTs
 | where Host in ((StorageArchiveLogsTs
     | extend (flag, score) = series_periods_validate(Reads, 7.0)
@@ -39,7 +93,15 @@
 | where array_index_of(flag, -1) &gt; 0 and array_sort_asc(score)[0] &lt; -5
 | project Host))
 | join kind=inner(StorageArchiveLogsEx
-    | where TransactionType == &#39;Create&#39;)
+    | where TransactionType == 'Create')
     on BlobURI
 | project BackupURI1
-</code></pre><p><a target=_blank rel="noopener noreferrer" href=/images/kusto/05_3.png><img class=img src=/images/kusto/05_3.png alt=Untitled></a></p></article><section class=article-labels><a class="article-category li" href=/categories/kusto-detective-agency/><span class=hashtag>#</span>Kusto Detective Agency</a><a class="article-tag li" href=/tags/kql/><span class=hashtag>#</span>kql</a></section><section class=article-navigation><p><a class=link href=/posts/case_04/><span class=li></span>Case 04 → Send one to catch them 🥷🏾</a></p><p><a class=link href=/posts/case_06/><span class=li></span>Case 06 → Something fishy 🎣</a></p></section></div><section id=footer class="footer max-body-width"><p>© 2026 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script></div></body></html>
+</code></pre>
+<p><img src="/media/posts/kusto/05_3.webp" alt="Untitled" width="1280" height="1002" loading="lazy" decoding="async"></p></div>
+  <footer class="post-end"><p class="mono"><a href="/stream/?lens=kusto">one of 11 in Kusto ↗</a></p><p class="mono"><a href="/posts/case_04/">← S.24 Case 04 → Send one to catch them 🥷🏾</a> &nbsp;·&nbsp; <a href="/posts/case_06/">S.26 Case 06 → Something fishy 🎣 →</a></p></footer>
+</article>
+<div class="grain"></div>
+<script src="/js/common.js"></script>
+
+</body>
+</html>

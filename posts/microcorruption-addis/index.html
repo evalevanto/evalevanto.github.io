@@ -1,1 +1,77 @@
-<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.154.5"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light"><meta name=supported-color-schemes content="light"><title>MicroCorruption: Addis Ababa&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel=stylesheet><link rel=icon type=image/png sizes=32x32 href=/images/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/images/favicon.ico><link rel=stylesheet href=/css/core.min.365ca8fdb23faa48c9ee0b1db3e557cb91e00aa641c11d9ab3d53d928c8341f94f3cbfc24e510a5ffbed83462148dd0d.css integrity=sha384-Nlyo/bI/qkjJ7gsds+VXy5HgCqZBwR2as9U9koyDQflPPL/CTlEKX/vtg0YhSN0N><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/index>Index</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>MicroCorruption: Addis Ababa</h1><p class=article-date>2020-09-01</p></section><article class=markdown-body><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis.png><img class=img src=/images/microcorruption/addis/addis.png alt></a></p><p>You get to Addis Ababa and find a lock with a manual:</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis-dets.png><img class=img src=/images/microcorruption/addis/addis-dets.png alt></a></p><ul><li>The lock is <strong>attached to HSM-1 module</strong>.</li><li>Passwords <strong>cannot be too long</strong>.</li><li>Usernames are <strong>printed back</strong>.</li><li>Flag <strong>set in memory</strong> if password is correct.</li></ul><p><em>Usernames are printed back</em>. This must be a clue. You think of <strong>format string</strong> vulnerabilities. Note to self: <code>Printf</code>!!</p><p>This is the <code>main</code> function:</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis-main.png><img class=img src=/images/microcorruption/addis/addis-main.png alt></a></p><ul><li><code>r14</code>: the length of the input buffer is <code>#0x13(19)</code> characters.</li><li><code>r15</code>: the input buffer is at address <code>0x2400</code>.</li><li>The input is copied to another destination at address <code>0x3a34</code>.</li><li>The input is then passed to <code>test_password_valid</code>; a flag is set depending on whether the password is correct.</li><li>The copied input is then printed back using <code>printf</code>.</li><li><code>tst 0x0(sp)</code> checks if flag is set before call to <code>unlock_door</code>.</li></ul><p>A quick run with test input: <code>aaaaaaaaaaaaaaaaaaa</code> (19 characters) to study program flow.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis-copy.png><img class=img src=/images/microcorruption/addis/addis-copy.png alt></a></p><p>The <code>test_password_valid</code> function:</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis-test-password.png><img class=img src=/images/microcorruption/addis/addis-test-password.png alt></a></p><p>The flag gets set at address <code>0x3a32</code>; the test input is wrong so flag is not set.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis-flag.png><img class=img src=/images/microcorruption/addis/addis-flag.png alt></a></p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis-a-print.png><img class=img src=/images/microcorruption/addis/addis-a-print.png alt></a></p><p>The input is printed out as is. The <code>printf</code> function is bulky but basically, it also checks for format specifiers: <code>%s</code>, <code>%x</code>, <code>%n</code>and displays accordingly. This presents an <strong>exploitable vulnerability</strong>. A look at <code>%n</code>:</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis-n.png><img class=img src=/images/microcorruption/addis/addis-n.png alt></a></p><ul><li>The length of the input gets written to memory at an address in the <code>1st- 2nd</code> byte of the input. Interesting.</li><li><code>%x</code> writes the argument in hex notation.</li></ul><blockquote><p>Detour:<br>Read more about format string vulnerability <a href=http://www.cis.syr.edu/~wedu/Teaching/cis643/LectureNotes_New/Format_String.pdf target=_blank>here</a>.<br>The following, is relevant snippets for this particular task.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis-buffer-overrun.png><img class=img src=/images/microcorruption/addis/addis-buffer-overrun.png alt></a></p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis-n-spec.png><img class=img src=/images/microcorruption/addis/addis-n-spec.png alt></a></p></blockquote><p>This can be exploited to overwrite a value in memory&mldr; but where to write to? The address where the flag gets set! The door gets unlocked when the flag is not zero.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis-correct-input.png><img class=img src=/images/microcorruption/addis/addis-correct-input.png alt></a></p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis-set-val.png><img class=img src=/images/microcorruption/addis/addis-set-val.png alt></a></p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/addis/addis-not-zero.png><img class=img src=/images/microcorruption/addis/addis-not-zero.png alt></a></p><p>Flag not zero: call to <code>unlock_door</code>&mldr; Hello!</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/door-unlocked.png><img class=img src=/images/microcorruption/door-unlocked.png alt></a></p><blockquote><p>Jo cannot wait no more! _0/</p></blockquote></article><section class=article-labels><a class="article-category li" href=/categories/reverse-engineering/><span class=hashtag>#</span>Reverse Engineering</a><a class="article-category li" href=/categories/micro-corruption/><span class=hashtag>#</span>Micro Corruption</a><a class="article-tag li" href=/tags/format-string-vulnerability/><span class=hashtag>#</span>format string vulnerability</a></section><section class=article-navigation><p><a class=link href=/posts/microcorruption-novo/><span class=li></span>MicroCorruption: Novosibirsk</a></p><p><a class=link href=/posts/microcorruption-jo/><span class=li></span>MicroCorruption: Johannesburg</a></p></section></div><section id=footer class="footer max-body-width"><p>© 2026 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script></div></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MicroCorruption: Addis Ababa · Levanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono&family=Fraunces:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="Levanto" href="/index.xml">
+</head>
+<body class="page-post" style="--age:1">
+<header class="topbar">
+  <a class="avatar" href="/" aria-label="home"><img class="face" src="/img/cat-face.webp" alt="the cat"><img class="wave" src="/img/cat-wave.webp" alt=""></a>
+  <nav><a href="/stream/">stream</a><a href="/#back">about</a></nav>
+</header>
+<article class="post">
+  <div class="post-head"><img class="print" src="/media/prints/microcorruption-addis.webp" alt="">
+    <div><span class="mono">S.7</span><h1>MicroCorruption: Addis Ababa</h1><p class="sub">Ab..about last night!</p><span class="mono">1 Sep 2020 · write-up · format string vulnerability</span></div>
+  </div>
+  <div class="post-body "><p><img src="/media/posts/microcorruption/addis/addis.webp" alt="" width="651" height="542" loading="lazy" decoding="async"></p>
+<p>You get to Addis Ababa and find a lock with a manual:</p>
+<p><img src="/media/posts/microcorruption/addis/addis-dets.webp" alt="" width="596" height="879" loading="lazy" decoding="async"></p>
+<ul>
+<li>The lock is <strong>attached to HSM-1 module</strong>.</li>
+<li>Passwords <strong>cannot be too long</strong>.</li>
+<li>Usernames are <strong>printed back</strong>.</li>
+<li>Flag <strong>set in memory</strong> if password is correct.</li>
+</ul>
+<p><em>Usernames are printed back</em>. This must be a clue. You think of <strong>format string</strong> vulnerabilities. Note to self: <code>Printf</code>!!</p>
+<p>This is the <code>main</code> function:</p>
+<p><img src="/media/posts/microcorruption/addis/addis-main.webp" alt="" width="812" height="765" loading="lazy" decoding="async"></p>
+<ul>
+<li><code>r14</code>: the length of the input buffer is <code>#0x13(19)</code> characters.</li>
+<li><code>r15</code>: the input buffer is at address <code>0x2400</code>.</li>
+<li>The input is copied to another destination at address <code>0x3a34</code>. </li>
+<li>The input is then passed to <code>test_password_valid</code>; a flag is set depending on whether the password is correct.</li>
+<li>The copied input is then printed back using <code>printf</code>.</li>
+<li><code>tst 0x0(sp)</code> checks if flag is set before call to <code>unlock_door</code>.</li>
+</ul>
+<p>A quick run with test input: <code>aaaaaaaaaaaaaaaaaaa</code> (19 characters) to study program flow.</p>
+<p><img src="/media/posts/microcorruption/addis/addis-copy.webp" alt="" width="798" height="185" loading="lazy" decoding="async"></p>
+<p>The <code>test_password_valid</code> function:</p>
+<p><img alt="" src="/images/microcorruption/addis/addis-test-password.png" /></p>
+<p>The flag gets set at address <code>0x3a32</code>; the test input is wrong so flag is not set.</p>
+<p><img src="/media/posts/microcorruption/addis/addis-flag.webp" alt="" width="1280" height="781" loading="lazy" decoding="async"></p>
+<p><img src="/media/posts/microcorruption/addis/addis-a-print.webp" alt="" width="627" height="141" loading="lazy" decoding="async"></p>
+<p>The input is printed out as is. The <code>printf</code> function is bulky but basically, it also checks for format specifiers: <code>%s</code>, <code>%x</code>, <code>%n</code>and displays accordingly. This presents an <strong>exploitable vulnerability</strong>. A look at <code>%n</code>:</p>
+<p><img src="/media/posts/microcorruption/addis/addis-n.webp" alt="" width="618" height="207" loading="lazy" decoding="async"></p>
+<ul>
+<li>The length of the input gets written to memory at an address in the <code>1st- 2nd</code> byte of the input. Interesting. </li>
+<li><code>%x</code> writes the argument in hex notation.</li>
+</ul>
+<blockquote>
+<p>Detour:<br />
+Read more about format string vulnerability <a href="http://www.cis.syr.edu/~wedu/Teaching/cis643/LectureNotes_New/Format_String.pdf">here</a>.<br />
+The following, is relevant snippets for this particular task.  </p>
+<p><img src="/media/posts/microcorruption/addis/addis-buffer-overrun.webp" alt="" width="869" height="192" loading="lazy" decoding="async"></p>
+<p><img src="/media/posts/microcorruption/addis/addis-n-spec.webp" alt="" width="907" height="199" loading="lazy" decoding="async"></p>
+</blockquote>
+<p>This can be exploited to overwrite a value in memory... but where to write to? The address where the flag gets set! The door gets unlocked when the flag is not zero.</p>
+<p><img src="/media/posts/microcorruption/addis/addis-correct-input.webp" alt="" width="717" height="319" loading="lazy" decoding="async"></p>
+<p><img src="/media/posts/microcorruption/addis/addis-set-val.webp" alt="" width="1280" height="641" loading="lazy" decoding="async"></p>
+<p><img src="/media/posts/microcorruption/addis/addis-not-zero.webp" alt="" width="741" height="641" loading="lazy" decoding="async"></p>
+<p>Flag not zero: call to <code>unlock_door</code>... Hello!</p>
+<p><img src="/media/posts/microcorruption/door-unlocked.webp" alt="" width="403" height="37" loading="lazy" decoding="async"></p>
+<blockquote>
+<p>Jo cannot wait no more! _0/</p>
+</blockquote></div>
+  <footer class="post-end"><p class="mono"><a href="/stream/?lens=microcorruption">one of 12 in MicroCorruption ↗</a></p><p class="mono"><a href="/posts/microcorruption-sydney/">← S.6 MicroCorruption: Sydney</a> &nbsp;·&nbsp; <a href="/posts/microcorruption-jo/">S.8 MicroCorruption: Johannesburg →</a></p></footer>
+</article>
+<div class="grain"></div>
+<script src="/js/common.js"></script>
+
+</body>
+</html>

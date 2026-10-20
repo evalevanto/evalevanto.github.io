@@ -1,4 +1,73 @@
-<!doctype html><html><meta charset=utf-8><meta name=generator content="Hugo 0.154.5"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=color-scheme content="light"><meta name=supported-color-schemes content="light"><title>MicroCorruption: Cusco&nbsp;&ndash;&nbsp;The Mess Of Nebula</title><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel=stylesheet><link rel=icon type=image/png sizes=32x32 href=/images/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/images/favicon.ico><link rel=stylesheet href=/css/core.min.365ca8fdb23faa48c9ee0b1db3e557cb91e00aa641c11d9ab3d53d928c8341f94f3cbfc24e510a5ffbed83462148dd0d.css integrity=sha384-Nlyo/bI/qkjJ7gsds+VXy5HgCqZBwR2as9U9koyDQflPPL/CTlEKX/vtg0YhSN0N><body><div class="base-body max-width"><section id=header class="header max-body-width"><div class=header-wrap><div class=header-left-side><a class=home href=/><span class=site-name>The Mess Of Nebula</span><span class=site-slogan>Gravitations towards point origin</span></a></div><div class=header-right-side><div class=nav-wrap><div class=nav><a class=site-tag href=/index>Index</a><a class=site-tag href=/about>About</a></div></div></div></div></section><div id=content class="flex-body max-body-width"><section class=article-header><h1>MicroCorruption: Cusco</h1><p class=article-date>2020-08-26</p></section><article class=markdown-body><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/cusco/cusco.jpg><img class=img src=/images/microcorruption/cusco/cusco.jpg alt></a></p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/cusco/cusco-details.png><img class=img src=/images/microcorruption/cusco/cusco-details.png alt></a></p><p>In this manual, you notice that:</p><ul><li>This lock is attached to <strong>HSM-1</strong> module.</li><li>The <strong>conditional flag</strong> that accidentally gets set when very long passwords are put in, has been <strong>removed</strong>.</li></ul><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/cusco/cusco-test-inpput.png><img class=img src=/images/microcorruption/cusco/cusco-test-inpput.png alt></a></p><p>After a <em>fast fail</em> using a test input: <code>aaaaaaaaaaaaaaaa</code>, turns out the program does not exit. It instead, loops back to the start of the program.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/cusco/cusco-loop-second-login.png><img class=img src=/images/microcorruption/cusco/cusco-loop-second-login.png alt></a></p><p>This is interesting. Why? Because it is a <strong>clue</strong> that at some point at the end of a failed password verification; instead of a program exit, the return address points to the beginning instruction to jump to. This shall become clear soon.</p><p>You do a slow step through the program. The <code>main</code> function just calls the <code>login</code> function.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/cusco/cusco-login.png><img class=img src=/images/microcorruption/cusco/cusco-login.png alt></a></p><ul><li>Written in the prompt display, passwords required to be <code>8 -16</code> characters.</li><li>the <code>getsn</code> function takes two params:</li></ul><pre tabindex=0><code>// length limits input buffer length
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MicroCorruption: Cusco · Levanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono&family=Fraunces:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="Levanto" href="/index.xml">
+</head>
+<body class="page-post" style="--age:1">
+<header class="topbar">
+  <a class="avatar" href="/" aria-label="home"><img class="face" src="/img/cat-face.webp" alt="the cat"><img class="wave" src="/img/cat-wave.webp" alt=""></a>
+  <nav><a href="/stream/">stream</a><a href="/#back">about</a></nav>
+</header>
+<article class="post">
+  <div class="post-head"><img class="print" src="/media/prints/microcorruption-cusco.webp" alt="">
+    <div><span class="mono">S.3</span><h1>MicroCorruption: Cusco</h1><p class="sub">Cusco!!</p><span class="mono">26 Aug 2020 · write-up · buffer overflow</span></div>
+  </div>
+  <div class="post-body "><p><img src="/media/posts/microcorruption/cusco/cusco.webp" alt="" width="380" height="380" loading="lazy" decoding="async"></p>
+<p><img src="/media/posts/microcorruption/cusco/cusco-details.webp" alt="" width="599" height="874" loading="lazy" decoding="async"></p>
+<p>In this manual, you notice that:</p>
+<ul>
+<li>This lock is attached to <strong>HSM-1</strong> module.</li>
+<li>The <strong>conditional flag</strong> that accidentally gets set when very long passwords are put in, has been <strong>removed</strong>.</li>
+</ul>
+<p><img src="/media/posts/microcorruption/cusco/cusco-test-inpput.webp" alt="" width="897" height="393" loading="lazy" decoding="async"></p>
+<p>After a <em>fast fail</em> using a test input: <code>aaaaaaaaaaaaaaaa</code>, turns out the program does not exit. It instead, loops back to the start of the program.</p>
+<p><img src="/media/posts/microcorruption/cusco/cusco-loop-second-login.webp" alt="" width="897" height="482" loading="lazy" decoding="async"></p>
+<p>This is interesting. Why? Because it is a <strong>clue</strong> that at some point at the end of a failed password verification; instead of a program exit, the return address points to the beginning instruction to jump to. This shall become clear soon.</p>
+<p>You do a slow step through the program. The <code>main</code> function just calls the <code>login</code> function.</p>
+<p><img src="/media/posts/microcorruption/cusco/cusco-login.webp" alt="" width="814" height="463" loading="lazy" decoding="async"></p>
+<ul>
+<li>Written in the prompt display, passwords required to be <code>8 -16</code> characters.</li>
+<li>the <code>getsn</code> function takes two params:</li>
+</ul>
+<pre><code>// length limits input buffer length
 void gets(char *buf, unsigned int length)
-</code></pre><blockquote><p><code>r15</code> holds the address that points to the input buffer(where the input would be stored) = <code>sp</code>.</p><p><code>r14</code> holds the input length <code>0x30</code>. This is 48; which is waay more than the specified range limit of <code>8 - 16 bytes</code>. This definitely smells like an <strong>exploitable clue</strong> :)</p></blockquote><ul><li><code>test_valid_password</code> gets called after input. This function basically, makes a call to <code>INT 0x7D</code> to test password validity and sets flag value.</li></ul><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/cusco/cusco-flag-zero.png><img class=img src=/images/microcorruption/cusco/cusco-flag-zero.png alt></a></p><p>With the input you used, the password validation fails. Observe.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/cusco/cusco-pc-loop.png><img class=img src=/images/microcorruption/cusco/cusco-pc-loop.png alt></a></p><p>:D&mldr; :D</p><p>The return address is in the value of the next bytes after a <code>16 byte</code> input; which with the initial clue of input length, can be <strong>overwritten</strong>. Another input test can be done.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/cusco/cusco-extra-bytes.png><img class=img src=/images/microcorruption/cusco/cusco-extra-bytes.png alt></a></p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/cusco/cusco-point-to-input.png><img class=img src=/images/microcorruption/cusco/cusco-point-to-input.png alt></a></p><p>The return address now gets set to <code>6161</code>(<code>aa</code> &lt;- <code>17-18th</code> input bytes). This time the program exits because <code>0x6161</code> is an invalid address.</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/cusco/cusco-pc.png><img class=img src=/images/microcorruption/cusco/cusco-pc.png alt></a></p><p>Now that this is known, what needs to be done is to manipulate the <code>17 -18th</code> input bytes; so that <code>PC</code> gets loaded with a valid address that will jump to where you want it: <code>call to unlock_door</code>.
-Following through the <code>login</code> function code, this call to <code>unlock_door</code> is at address <code>0x4528</code>. What&rsquo;s next?</p><blockquote><p>Note on endianness. This processor uses <code>little endian</code> byte ordering.</p></blockquote><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/cusco/cusco-correct-input.png><img class=img src=/images/microcorruption/cusco/cusco-correct-input.png alt></a></p><p>Aaaand..</p><p><a target=_blank rel="noopener noreferrer" href=/images/microcorruption/door-unlocked.png><img class=img src=/images/microcorruption/door-unlocked.png alt></a></p><p>Unlocked and unloaded!!</p></article><section class=article-labels><a class="article-category li" href=/categories/reverse-engineering/><span class=hashtag>#</span>Reverse Engineering</a><a class="article-category li" href=/categories/micro-corruption/><span class=hashtag>#</span>Micro Corruption</a><a class="article-tag li" href=/tags/buffer-overflow/><span class=hashtag>#</span>buffer overflow</a></section><section class=article-navigation><p><a class=link href=/posts/microcorruption-whitehorse/><span class=li></span>MicroCorruption: Whitehorse</a></p><p><a class=link href=/posts/microcorruption-hanoi/><span class=li></span>MicroCorruption: Hanoi</a></p></section></div><section id=footer class="footer max-body-width"><p>© 2026 Eva Levanto</p><p><span>Powered by </span><a href=https://gohugo.io>Hugo</a><span> and the </span><a href=https://themes.gohugo.io/hugo-notepadium/>Notepadium</a></p></section><script defer type=text/javascript src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity=sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN crossorigin=anonymous>MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"]],processEscapes:!0,processEnvironments:!0,skipTags:["script","noscript","style","textarea","pre"],TeX:{equationNumbers:{autoNumber:"AMS"},extensions:["AMSmath.js","AMSsymbols.js"]}}}),MathJax.Hub.Queue(function(){var e,t=MathJax.Hub.getAllJax();for(e=0;e<t.length;e+=1)t[e].SourceElement().parentNode.className+=" has-jax"}),MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}})</script></div></body></html>
+</code></pre>
+<blockquote>
+<p><code>r15</code> holds the address that points to the input buffer(where the input would be stored) = <code>sp</code>.</p>
+<p><code>r14</code> holds the input length <code>0x30</code>. This is 48; which is waay more than the specified range limit of <code>8 - 16 bytes</code>. This definitely smells like an <strong>exploitable clue</strong> :)</p>
+</blockquote>
+<ul>
+<li><code>test_valid_password</code> gets called after input. This function basically, makes a call to <code>INT 0x7D</code> to test password validity and sets flag value.</li>
+</ul>
+<p><img src="/media/posts/microcorruption/cusco/cusco-flag-zero.webp" alt="" width="1280" height="137" loading="lazy" decoding="async"></p>
+<p>With the input you used, the password validation fails. Observe.</p>
+<p><img src="/media/posts/microcorruption/cusco/cusco-pc-loop.webp" alt="" width="1280" height="607" loading="lazy" decoding="async"></p>
+<p>:D... :D </p>
+<p>The return address is in the value of the next bytes after a <code>16 byte</code> input; which with the initial clue of input length, can be <strong>overwritten</strong>. Another input test can be done.</p>
+<p><img src="/media/posts/microcorruption/cusco/cusco-extra-bytes.webp" alt="" width="901" height="404" loading="lazy" decoding="async"></p>
+<p><img src="/media/posts/microcorruption/cusco/cusco-point-to-input.webp" alt="" width="935" height="850" loading="lazy" decoding="async">  </p>
+<p>The return address now gets set to <code>6161</code>(<code>aa</code> &lt;- <code>17-18th</code> input bytes). This time the program exits because <code>0x6161</code> is an invalid address.</p>
+<p><img src="/media/posts/microcorruption/cusco/cusco-pc.webp" alt="" width="762" height="746" loading="lazy" decoding="async"></p>
+<p>Now that this is known, what needs to be done is to manipulate the <code>17 -18th</code> input bytes; so that <code>PC</code> gets loaded with a valid address that will jump to where you want it: <code>call to unlock_door</code>.
+Following through the <code>login</code> function code, this call to <code>unlock_door</code> is at address <code>0x4528</code>. What's next? </p>
+<blockquote>
+<p>Note on endianness. This processor uses <code>little endian</code> byte ordering.</p>
+</blockquote>
+<p><img src="/media/posts/microcorruption/cusco/cusco-correct-input.webp" alt="" width="898" height="401" loading="lazy" decoding="async"></p>
+<p>Aaaand..</p>
+<p><img src="/media/posts/microcorruption/door-unlocked.webp" alt="" width="403" height="37" loading="lazy" decoding="async"></p>
+<p>Unlocked and unloaded!!</p></div>
+  <footer class="post-end"><p class="mono"><a href="/stream/?lens=microcorruption">one of 12 in MicroCorruption ↗</a></p><p class="mono"><a href="/posts/gdal/">← S.2 GDAL on Travis</a> &nbsp;·&nbsp; <a href="/posts/microcorruption-hanoi/">S.4 MicroCorruption: Hanoi →</a></p></footer>
+</article>
+<div class="grain"></div>
+<script src="/js/common.js"></script>
+
+</body>
+</html>
