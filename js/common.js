@@ -34,3 +34,9 @@ function onScrollIntent(fn) {
   addEventListener("touchstart", e => ty = e.touches[0].clientY, { passive: true });
   addEventListener("touchmove", e => { fn((ty - e.touches[0].clientY) * 2); ty = e.touches[0].clientY; }, { passive: true });
 }
+
+// "one of 12 in …" at the end of a post opens the stream through that lens, without putting it in the address
+document.addEventListener("click", e => {
+  const a = e.target.closest("a[data-lens]");
+  if (a) try { sessionStorage.setItem("lens", a.dataset.lens); } catch {}
+});

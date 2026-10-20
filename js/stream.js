@@ -1,17 +1,15 @@
 const { items, lenses } = DATA;
 const TOP = matchMedia("(max-width: 800px)").matches ? 190 : 240;
-const params = new URLSearchParams(location.search);
-let seed = params.get("seed") || "levanto";
-let lens = params.get("lens") || "all";
+// state lives in the page, never in the address: one fixed starting layout, shuffles stay in memory.
+// a post can ask for a lens (its series) through the tab's session storage.
+let seed = "levanto";
+let lens = "all";
+try { lens = sessionStorage.getItem("lens") || "all"; sessionStorage.removeItem("lens"); } catch {}
+if (lens !== "all" && !lenses.some(l => l.key === lens)) lens = "all";
+if (location.search) history.replaceState(null, "", location.pathname);  // old links with ?seed= / ?lens= land on a clean address
 let shown = [], rows = [], kinOf = new Map(), hovered = null;
 
 const nearest = (list, key, v) => list.reduce((b, c) => Math.abs(c[key] - v) < Math.abs(b[key] - v) ? c : b);
-
-function syncURL() {
-  const q = new URLSearchParams({ seed });
-  if (lens !== "all") q.set("lens", lens);
-  history.replaceState(null, "", "?" + q);
-}
 
 // re-deal: the same table, dealt again with a fade (the first view arrives with the page)
 function redeal() {
@@ -58,7 +56,7 @@ function render() {
   kinOf = new Map(shown.map(p => [p.slug, new Set(shown.filter(q => q !== p && q.rel.some(k => p.rel.includes(k))).map(q => q.slug))]));
   const inLens = new Set(shown.map(p => p.slug));
   for (const t of strip.querySelectorAll(".tick")) t.classList.toggle("out", !inLens.has(t.dataset.slug));
-  document.getElementById("seedtag").textContent = `seed “${seed}” · s shuffles · r opens a random print`;
+  document.getElementById("seedtag").textContent = "s shuffles · r opens a random print";
   for (const a of document.querySelectorAll("#lenses a")) a.classList.toggle("on", a.dataset.lens === lens);
   updateHere();
 }
@@ -81,10 +79,10 @@ function buildLenses() {
   for (const l of [{ key: "all", label: "all" }, ...lenses]) {
     const a = document.createElement("a");
     a.className = "mono";
-    a.href = l.key === "all" ? "?" : `?lens=${l.key}`;
+    a.href = "#";
     a.dataset.lens = l.key;
     a.textContent = l.label;
-    a.onclick = e => { e.preventDefault(); lens = l.key; syncURL(); redeal(); scrollTo({ top: 0 }); };
+    a.onclick = e => { e.preventDefault(); lens = l.key; redeal(); scrollTo({ top: 0 }); };
     nav.appendChild(a);
   }
 }
@@ -161,6 +159,6 @@ buildYears();
 render();
 addEventListener("keydown", e => {
   if (!plainKey(e)) return;
-  if (e.key === "s") { seed = Math.random().toString(36).slice(2, 7); syncURL(); redeal(); }
+  if (e.key === "s") { seed = Math.random().toString(36).slice(2, 7); redeal(); }
   if (e.key === "r") openRandom(shown);
 });
