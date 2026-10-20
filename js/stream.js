@@ -127,15 +127,20 @@ function updateHere() {
 
 // at the top, keep scrolling up and the stream sinks away: back to the landing
 const root = document.getElementById("stream"), uphint = document.getElementById("uphint");
-let pull = 0, returning = false, settle;
+let pull = 0, returning = false, settle, reachedTop = 0;
+addEventListener("scroll", () => { if (scrollY > 2) reachedTop = null; else reachedTop ??= performance.now(); }, { passive: true });
 function pullUp(dy) {
   if (returning) return;
-  if (scrollY > 0 || dy >= 0) { pull = 0; } else pull += -dy;
-  root.style.translate = `0 ${Math.min(pull, 900) * 0.12}px`;
-  uphint.style.opacity = pull > 40 ? Math.min(1, pull / 400) * 0.6 : 0;
+  if (reachedTop === null || performance.now() - reachedTop < 400) return;  // momentum from scrolling up the stream doesn't count
+  if (scrollY > 2) pull = 0;
+  else if (dy < 0) pull += -dy;
+  else if (dy > 4) pull = Math.max(0, pull - dy * 2);  // a real move down eases off; trackpad jitter (0, ±1) is ignored
+  else return;
+  root.style.translate = `0 ${Math.min(pull, 500) * 0.2}px`;
+  uphint.style.opacity = pull > 30 ? Math.min(1, pull / 250) * 0.6 : 0;
   clearTimeout(settle);
   settle = setTimeout(() => { pull = 0; root.style.translate = ""; uphint.style.opacity = 0; }, 700);
-  if (pull > 900) {
+  if (pull > 500) {  // about one gentle trackpad swipe
     returning = true;
     try { sessionStorage.setItem("from", "stream"); } catch {}
     document.body.classList.add("returning");
