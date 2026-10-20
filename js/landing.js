@@ -60,7 +60,7 @@ function setRate() {
   for (const a of drift) a.updatePlaybackRate(rate);
 }
 function tick() {
-  push *= 0.93; travel *= 0.985;
+  push *= 0.93; travel *= 0.995;
   setRate();
   ticking = Math.abs(push) > 0.01;
   if (ticking) requestAnimationFrame(tick);
@@ -70,7 +70,8 @@ function onScroll(dy) {
   push = Math.max(-8, Math.min(10, push + dy * 0.02));
   travel = Math.max(0, travel + dy);
   hint.style.opacity = 0;
-  if (travel > 2600) { leaving = true; document.body.classList.add("leaving"); setTimeout(() => location.href = "/stream/", 1300); }
+  if (travel > 1100) {  // about one deliberate trackpad swipe
+    leaving = true; document.body.classList.add("leaving"); setTimeout(() => location.href = "/stream/", 1300); }
   if (!ticking) { ticking = true; requestAnimationFrame(tick); }
 }
 addEventListener("wheel", e => onScroll(e.deltaY), { passive: true });
