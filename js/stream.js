@@ -125,6 +125,28 @@ function updateHere() {
   if (rows.length) here.style.setProperty("--p", pos(nearest(rows, "y", scrollY + innerHeight / 2).t) + "%");
 }
 
+// at the top, keep scrolling up and the stream sinks away: back to the landing
+const root = document.getElementById("stream"), uphint = document.getElementById("uphint");
+let pull = 0, returning = false, settle;
+function pullUp(dy) {
+  if (returning) return;
+  if (scrollY > 0 || dy >= 0) { pull = 0; } else pull += -dy;
+  root.style.translate = `0 ${Math.min(pull, 900) * 0.12}px`;
+  uphint.style.opacity = pull > 40 ? Math.min(1, pull / 400) * 0.6 : 0;
+  clearTimeout(settle);
+  settle = setTimeout(() => { pull = 0; root.style.translate = ""; uphint.style.opacity = 0; }, 700);
+  if (pull > 900) {
+    returning = true;
+    try { sessionStorage.setItem("from", "stream"); } catch {}
+    document.body.classList.add("returning");
+    setTimeout(() => location.href = "/", 1100);
+  }
+}
+addEventListener("wheel", e => pullUp(e.deltaY), { passive: true });
+let ty = null;
+addEventListener("touchstart", e => ty = e.touches[0].clientY, { passive: true });
+addEventListener("touchmove", e => { pullUp((ty - e.touches[0].clientY) * 2); ty = e.touches[0].clientY; }, { passive: true });
+
 buildLenses();
 buildYears();
 render();

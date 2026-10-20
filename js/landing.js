@@ -1,4 +1,6 @@
 const floatsEl = document.getElementById("floats");
+// coming back up from the stream: the print descends into place
+try { if (sessionStorage.getItem("from") === "stream") { sessionStorage.removeItem("from"); document.body.classList.add("arriving"); } } catch {}
 const card = document.getElementById("card");
 
 // the prints that rise over the words: a different set every visit, some of the newest always among them
@@ -11,7 +13,7 @@ picks.forEach((p, i) => {
   const el = document.createElement("div");
   el.className = "float";
   const dur = 38 + depth * 70;
-  el.style.cssText = `left:${x}vw;width:${w}vw;--w:${w};--y:${x < 60 ? 62 + (i * 13) % 20 : 6 + (i * 41) % 70}vh;animation-duration:${dur}s;animation-delay:${-dur * (500 + (i * 0.37) % 1)}s;` +  // deep into the loop, so running time backwards never reaches its start
+  el.style.cssText = `left:${x}vw;width:${w}vw;--w:${w};--y:${x < 60 ? 62 + (i * 13) % 20 : 6 + (i * 41) % 70}vh;animation-duration:${dur}s;animation-delay:${-dur * ((i * 0.37) % 1)}s;` +
     `opacity:${1 - depth * 0.35};--blur:${depth > 0.55 ? 1 + depth * 1.5 : 0}px`;
   el.innerHTML = `<div class="sway" style="--amp:${6 + (1 - depth) * 12}px;--tilt:${(i % 2 ? 1 : -1) * (1.5 + (i % 3))}deg;animation-duration:${5 + (i % 4)}s">` +
     `<img src="${p.img.src}" alt="" decoding="async"><span class="cap"><b></b><span class="mono"></span></span></div>`;
@@ -51,13 +53,18 @@ document.querySelector(".topbar .avatar").addEventListener("click", e => { e.pre
 
 // scroll is time: the wheel speeds the drift up or runs it backwards; keep going and you fall into the stream
 const drift = floatsEl.getAnimations({ subtree: true });
+// start every clock far into its loop: rewinding to zero would finish the animation and freeze the prints
+for (const a of drift) a.currentTime += a.effect.getComputedTiming().duration * 2000;
 const hint = document.getElementById("hint");
 let hover = false, push = 0, travel = 0, frozen = false, ticking = false, leaving = false, lastRate = 1;
 function setRate() {
   const rate = frozen ? 0 : (hover ? 0.3 : 1) + push;
   if (Math.abs(rate - lastRate) < 0.01 && rate !== 0) return;
   lastRate = rate;
-  for (const a of drift) a.updatePlaybackRate(rate);
+  for (const a of drift) {
+    a.updatePlaybackRate(rate);
+    if (a.playState === "finished") a.play();  // never stay stuck at an end
+  }
 }
 function tick() {
   push *= 0.93; travel *= 0.995;
